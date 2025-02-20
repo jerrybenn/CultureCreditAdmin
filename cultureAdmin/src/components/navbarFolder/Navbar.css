@@ -1,0 +1,50 @@
+.navbarContainer {
+    background-color: turquoise;
+    width: 200px;
+    height: 100vh;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: white;
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.linkContainer {
+    padding: 10px;
+}
+
+.linkContainer a {
+    text-decoration: none;
+    color: black;
+    font-size: 18px;
+    transition: color 0.3s ease;
+}
+
+.linkContainer a:hover {
+    color: rgb(255, 255, 255);
+}
+
+.underline {
+    border-bottom: 2px solid #e3e8ee;
+    width: 150%;
+    margin: 10px 0;
+}
+
+/* Adjust main content */
+.mainContent {
+    margin-left: 220px; /* Push content right */
+    padding: 20px;
+}
