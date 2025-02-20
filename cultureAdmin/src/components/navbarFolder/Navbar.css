@@ -43,8 +43,7 @@ nav {
     margin: 10px 0;
 }
 
-/* Adjust main content */
 .mainContent {
-    margin-left: 220px; /* Push content right */
+    margin-left: 220px; 
     padding: 20px;
 }
