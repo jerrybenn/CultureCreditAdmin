@@ -1,5 +1,6 @@
-import {React} from 'react'
-import { useNavigate } from 'react-router-dom';
+import React from 'react'
+import { useState, useEffect } from 'react';
+import { useNavigate,  } from 'react-router-dom';
 import HorizontalNav from '../../components/horizontalNavbar/HorizontalNav.jsx'
 import './Home.css'
 
@@ -16,8 +17,25 @@ import community from '../../components/assets/community.svg'
 
 
 const Home = () => {
-  const eventCount = 0;
+  let eventCount = 0;
   const studentCount = 0;
+
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+  
+        const loadData = async() =>  {
+          console.log('fetching data');
+          const d = await fetch('http://127.0.0.1:5000/events')
+          const json = await d.json()
+          setData(json.events)
+          console.log('done fetching data');
+        }
+        loadData()
+  
+      },[]);
+
+      eventCount = data.length;
   
   const navigate = useNavigate(); // Initialize navigation function
   return (

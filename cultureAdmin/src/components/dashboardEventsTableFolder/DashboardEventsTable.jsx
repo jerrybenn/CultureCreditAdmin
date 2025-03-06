@@ -1,13 +1,40 @@
-import React from 'react'
+import  {React, useEffect, useState} from 'react'
 import './DashboardEventsTable.css'
 
 const DashboardEventsTable = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+
+      const loadData = async() =>  {
+        console.log('fetching data');
+        const d = await fetch('http://127.0.0.1:5000/events')
+        const json = await d.json()
+        setData(json.events)
+
+      
+
+     
+        /*.then(data => setData(data))
+        .catch(error => console.error('Error fetching data:', error));*/
+        
+        console.log('done fetching data');
+      }
+      loadData()
+
+    },[]);
+    
+      
+
+  
+
   return (
+    
     <div className="table-container">
     <table className="event-table">
       <thead>
         <tr>
-          <th>Event</th>
+          <th>Event Name</th>
           <th>Host</th>
           <th>Location</th>
           <th>Date</th>
@@ -16,18 +43,20 @@ const DashboardEventsTable = () => {
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>2025 Hackathon</td>
-          <td>CS Scinence Club</td>
-          <td>BOA 230</td>
-          <td>March 15, 2025</td>
-          <td>6:00 PM</td>
-          <td>3</td>
+      {data.map((events, index) => (
+        <tr key={index}>
+          <td>{events.eventName}</td>
+          <td>{events.host}</td>
+          <td>{events.location}</td>
+          <td>{events.date}</td>
+          <td>{events.time}</td>
+          <td>{events.numOfCC}</td>
         </tr>
+      ))}
       </tbody>
     </table>
   </div>
   )
 }
 
-export default DashboardEventsTable
+export default DashboardEventsTable;

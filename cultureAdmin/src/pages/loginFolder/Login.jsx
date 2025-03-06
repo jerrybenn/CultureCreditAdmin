@@ -12,13 +12,13 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const webLink = "http://DSU-Matlab-02.desu.edu:5000/web/admin/";
+  const webLink = "http://DSU-Matlab-02.desu.edu:5000/login";
   const localLink = "http://127.0.0.1:5000/web/admin/";
 
   const handleLogin = async() => {
 
     try {
-      const response = await fetch(localLink, {
+      const response = await fetch(webLink, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
