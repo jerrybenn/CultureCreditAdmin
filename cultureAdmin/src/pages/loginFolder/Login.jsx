@@ -3,6 +3,7 @@ import './Login.css';
 import { useNavigate } from 'react-router-dom';
 
 
+
 import mail from '../../components/assets/mail.svg';
 import lock from '../../components/assets/lock.svg';
 
@@ -11,12 +12,34 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    if (email.length < 1 || password.length < 1) {
-      alert('Both email and password must have at least 5 characters.');
-      return;
+  const webLink = "http://DSU-Matlab-02.desu.edu:5000/web/admin/";
+  const localLink = "http://127.0.0.1:5000/web/admin/";
+
+  const handleLogin = async() => {
+
+    try {
+      const response = await fetch(localLink, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        console.log("Login Successful:", data);
+        navigate("/home");
+      } else {
+        alert("Invalid credentials, please try again.");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      alert("Something went wrong. Please try again later.");
     }
-    navigate('/home');
+    
+    
     console.log('Email:', email);
     console.log('Password:', password);
   };

@@ -1,5 +1,5 @@
 .navbarContainer {
-    background-color: turquoise;
+    background-color: rgb(255, 255, 255);
     width: 200px;
     height: 100vh;
     padding: 20px;
@@ -13,33 +13,33 @@
 
 h2 {
     margin-bottom: 20px;
-    color: white;
+    color: #06ADE4;
 }
 
 nav {
     display: flex;
     flex-direction: column;
-    gap: 15px;
 }
 
 .linkContainer {
-    padding: 10px;
+    display: flex;
+    align-items: center;
 }
 
 .linkContainer a {
     text-decoration: none;
-    color: black;
+    color: #000000;
     font-size: 18px;
     transition: color 0.3s ease;
 }
 
 .linkContainer a:hover {
-    color: rgb(255, 255, 255);
+    color: #06ADE4;
 }
 
 .underline {
     border-bottom: 2px solid #e3e8ee;
-    width: 150%;
+    width: 140%;
     margin: 10px 0;
 }
 

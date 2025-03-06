@@ -1,0 +1,30 @@
+.horizontalNavContainter{
+    
+    display: flex;  /* Enables Flexbox */
+    justify-content: flex-end;  /* Pushes content to the right */
+    align-items: center; 
+    
+}
+
+.iconBorder{
+    background-color: white;
+    border-radius: 30%;
+    height: 30px;
+    width: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px;
+    margin-right:8px ;
+}
+
+.addNew{
+    background-color:#06ADE4;
+    color: white;
+    padding: 12px;
+    border-radius: 5px;
+    font-weight: bold;
+    ;
+
+}
+
