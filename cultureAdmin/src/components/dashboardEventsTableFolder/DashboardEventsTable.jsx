@@ -17,7 +17,8 @@ const DashboardEventsTable = () => {
      
         /*.then(data => setData(data))
         .catch(error => console.error('Error fetching data:', error));*/
-        
+        console.log(d);
+        console.log(json.events);
         console.log('done fetching data');
       }
       loadData()

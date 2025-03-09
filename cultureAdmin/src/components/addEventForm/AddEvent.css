@@ -35,6 +35,9 @@
     border-radius: 5px;
 }
 
+.textInputContainer{
+    margin-bottom: 20px;
+}
 .formInputContent{
     margin: 20px;
 }
@@ -63,6 +66,7 @@
 
 .overcallNumericalInputContainer {
     display: flex;
+    margin-bottom: 20px;
    
     gap: 20px; /* Adds spacing between the two date fields */
     justify-content: space-between; /* Ensures even spacing */
@@ -80,6 +84,12 @@
     padding: 10px;
     border-radius: 5px;
     margin-top: 5px;
+    display: flex;
+}
+
+.numericalInput img {
+        
+    padding: 5px;
 }
 
 .numericalInput input {

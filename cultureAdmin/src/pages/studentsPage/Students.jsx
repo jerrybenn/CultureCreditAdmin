@@ -1,8 +1,13 @@
 import React from 'react'
+import HorizontalNav from '../../components/horizontalNavbar/HorizontalNav.jsx'
+import './Students.css'
 
 const students = () => {
   return (
-    <div>students</div>
+    <div className="studentsContainer"> <HorizontalNav />
+    <div> students</div>
+    </div>
+    
   )
 }
 

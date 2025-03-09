@@ -1,0 +1,4 @@
+.studentsContainer{
+    display: block; /* ✅ Prevent flex from affecting nav */
+  width: 100%;
+}

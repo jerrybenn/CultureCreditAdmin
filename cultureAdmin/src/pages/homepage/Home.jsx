@@ -32,6 +32,8 @@ const Home = () => {
           console.log('done fetching data');
         }
         loadData()
+
+        
   
       },[]);
 
