@@ -5,6 +5,7 @@ import searchIcon from '../assets/search.svg';
 import bellIcon from '../assets/bell.svg';
 import AddEvent from '../../components/addEventForm/AddEvent.jsx';
 
+
 const HorizontalNav = () => {
   const [showModal, setShowModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);

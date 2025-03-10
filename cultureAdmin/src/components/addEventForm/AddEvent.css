@@ -10,10 +10,12 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    
 }
 
 .eventFormContent{
     background: white;
+    border-radius: 5px;
    
 }
 
@@ -99,3 +101,83 @@
     outline: none;
     background: transparent;
 }
+
+.uploadImageContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed #005ffe;
+    padding: 20px;
+    margin-top: 10px;
+    cursor: pointer;
+    text-align: center;
+    background-color: #ecefff;
+    height: 200px;
+    border-radius: 5px;
+}
+
+.uploadImage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+}
+
+.uploadText {
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.clickToUpload {
+    color: #005ffe;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.imagePreview {
+    position: relative;
+    margin-top: 10px;
+}
+
+.imagePreview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+}
+
+.cancelButton {
+    margin-top: 5px;
+    padding: 5px 10px;
+    background-color: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+p{
+    
+    
+}
+
+.submitContainer {
+    display: flex;  /* Enables Flexbox */
+    justify-content: flex-end;  /* Aligns items to the right */
+    margin-top: 20px;  /* Adds spacing above */
+    padding-right: 20px;  /* Adds right padding to push content away from the edge */
+}
+
+
+.formSubmit {
+    color:#005ffe;
+    padding-left: 425px;
+    margin-right: -55px;
+    font-size: 20px;
+    margin-top: 10px;
+    
+}
+
