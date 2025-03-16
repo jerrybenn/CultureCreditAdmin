@@ -2,148 +2,217 @@ import React, { useState } from 'react';
 import './AddEvent.css';
 
 import xMark from '../assets/xmark.svg';
-import calendar from '../assets/calendar.svg';
-import clock from '../assets/clock.svg';
-import timer from '../assets/timer (1).svg';
-import CheckIcon from '@mui/icons-material/Check';
-import check from '../assets/check.svg';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-
-
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import PersonIcon from '@mui/icons-material/Person';
+import Divider from '@mui/material/Divider';
+import MenuItem from '@mui/material/MenuItem';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import Menu from '@mui/material/Menu';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import TextField from '@mui/material/TextField';
 
 const AddEvent = ({ onClose }) => {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [anchorElCredits, setAnchorElCredits] = useState(null);
+  const [anchorElCheckins, setAnchorElCheckins] = useState(null);
+  const [selectedCredits, setSelectedCredits] = useState('');
+  const [selectedCheckins, setSelectedCheckins] = useState('');
+  const [anchorElDate, setAnchorElDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [anchorElTime, setAnchorElTime] = useState(null);
+  const [selectedTime, setSelectedTime] = useState('');
 
-  const handleFileChange = (event) => {
+
+  const handleMenuOpenTime = (event) => {
+    setAnchorElTime(event.currentTarget);
+  };
+
+  const handleMenuCloseTime = () => {
+    setAnchorElTime(null);
+  };
+
+  const handleTimeChange = (event) => {
+    setSelectedTime(event.target.value);
+  };
+
+  const handleMenuOpenCredits = (event) => {
+    setAnchorElCredits(event.currentTarget);
+  };
+
+  const handleMenuCloseCredits = (number) => {
+    setSelectedCredits(number);
+    setAnchorElCredits(null);
+  };
+
+  const handleMenuOpenCheckins = (event) => {
+    setAnchorElCheckins(event.currentTarget);
+  };
+
+  const handleMenuCloseCheckins = (number) => {
+    setSelectedCheckins(number);
+    setAnchorElCheckins(null);
+  };
+
+  const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setSelectedImage(URL.createObjectURL(file)); // Create preview URL
+      setSelectedImage(file);
     }
   };
 
-  const handleDragOver = (event) => {
-    event.preventDefault(); // Prevent default behavior to allow drop
+  const handleMenuOpenDate = (event) => {
+    setAnchorElDate(event.currentTarget);
   };
 
-  const handleDrop = (event) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files[0];
-    if (file) {
-      setSelectedImage(URL.createObjectURL(file));
-    }
+  const handleMenuCloseDate = () => {
+    setAnchorElDate(null);
   };
 
-  const handleCancel = () => {
-    setSelectedImage(null); // Remove selected file
+  const handleDateChange = (event) => {
+    setSelectedDate(event.target.value);
   };
+
 
   return (
     <div className="eventFormContainer">
       <div className="eventFormContent">
-        <div className="formTitle">
-          Create event
+        <div className="closeContainer">
           <img src={xMark} alt="Close" onClick={onClose} />
         </div>
-
-        <div className="formInputContent">
-          {/* Event Name */}
-          <div className="textInputContainer">
-            Event name
-            <div className="inputContainer">
-              <input type="text" placeholder="Enter event name" />
-              <div className="addMore">Add description</div>
+        <div className="formTitle">
+          <input type="text" placeholder="Give your event a name" />
+        </div>
+        <div className="dividerDiv">
+          <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
+        </div>
+        <div className="dateTime">
+          <div className="dateTimeInputs"  onClick={handleMenuOpenDate}>
+            <div className="dateTimeImg">
+              <CalendarMonthIcon sx={{ color: '#c6cdcf'}} />
+            </div>
+            <div className="dateTimeText">
+              <div className="dateTimeTitle">Day</div>
+              <div className="dateTimeDisplay">{selectedDate || "Select Date"}</div>
+            </div>
+            <div className="arrows">
+              <UnfoldMoreIcon sx={{ color: '#c6cdcf'}}/>
             </div>
           </div>
-
-          {/* Date, Time, Duration */}
-          <div className="overcallNumericalInputContainer">
-            <div className="numericalInputContainer">
-              Date
-              <div className="numericalInput">
-                <input type="text" placeholder="Event date" />
-                <img src={calendar} alt="Calendar" />
-              </div>
+          <div className="dateTimeInputs" onClick={handleMenuOpenTime}>
+            <div className="dateTimeImg">
+              <AccessTimeIcon sx={{ color: '#c6cdcf'}} />
             </div>
-
-            <div className="numericalInputContainer">
-              Time
-              <div className="numericalInput">
-                <input type="text" placeholder="Event time" />
-                <img src={clock} alt="Clock" />
-              </div>
+            <div className="dateTimeText">
+              <div className="dateTimeTitle">Time</div>
+              <div className="dateTimeDisplay">{selectedTime || "Select Time"}</div>
             </div>
-
-            <div className="numericalInputContainer">
-              Duration
-              <div className="numericalInput">
-                <input type="text" placeholder="Event duration" />
-                <img src={timer} alt="Timer" />
-                
-              </div>
+            <div className="arrows">
+              <UnfoldMoreIcon sx={{ color: '#c6cdcf'}} />
             </div>
           </div>
+        </div>
+        <div className="dividerDiv">
+          <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
+        </div>
+        <Menu
+          anchorEl={anchorElDate}
+          open={Boolean(anchorElDate)}
+          onClose={handleMenuCloseDate}
+        >
+          <MenuItem>
+            <TextField
+              type="date"
+              label="Select Date"
+              InputLabelProps={{ shrink: true }}
+              value={selectedDate}
+              onChange={handleDateChange}
+              fullWidth
+            />
+          </MenuItem>
+        </Menu>
 
-          {/* Location */}
-          <div className="textInputContainer">
-            Location
-            <div className="inputContainer">
-              <input type="text" placeholder="Enter event location" />
-              <div className="addMore">Add description</div>
+        {/* Time Menu */}
+        <Menu anchorEl={anchorElTime} open={Boolean(anchorElTime)} onClose={handleMenuCloseTime}>
+          <MenuItem>
+            <TextField
+              type="time"
+              label="Select Time"
+              InputLabelProps={{ shrink: true }}
+              value={selectedTime}
+              onChange={handleTimeChange}
+              fullWidth
+            />
+          </MenuItem>
+        </Menu>
+
+        <div className="hostAndImageContainer">
+          <div className="seperationContainer">
+            <div className="host">Host</div>
+            <div className="hostAndImageInputContainer">
+              <PersonIcon sx={{ color: '#c6cdcf'}} />
+              <input type="text" placeholder="Host Name" />
             </div>
           </div>
-
-          {/* Host Name */}
-          <div className="textInputContainer">
-            Host name
-            <div className="inputContainer">
-              <input type="text" placeholder="Enter host name" />
-              <div className="addMore">Add description</div>
+          <div className="numericSeperation">
+            <div className="host">Credits</div>
+            <div className="numericInputContainer" onClick={handleMenuOpenCredits}>
+              <input type="text" placeholder="#CC" value={selectedCredits} readOnly />
+            </div>
+            <Menu anchorEl={anchorElCredits} open={Boolean(anchorElCredits)} onClose={() => handleMenuCloseCredits(selectedCredits)}>
+              <MenuItem onClick={() => handleMenuCloseCredits('1')}>1 CC</MenuItem>
+              <MenuItem onClick={() => handleMenuCloseCredits('2')}>2 CC</MenuItem>
+              <MenuItem onClick={() => handleMenuCloseCredits('3')}>3 CC</MenuItem>
+            </Menu>
+          </div>
+        </div>
+        <div className="dividerDiv">
+          <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
+        </div>
+        <div className="hostAndImageContainer">
+          <div className="seperationContainer">
+            <div className="host">Location</div>
+            <div className="hostAndImageInputContainer">
+              <LocationOnIcon sx={{ color: '#c6cdcf'}} />
+              <input type="text" placeholder="Location Name" />
             </div>
           </div>
-
-          {/* Upload Image Section */}
-          <div
-            className="uploadImageContainer"
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          >
-            <div className="uploadImage">
-              {!selectedImage && ( // Hide icon when an image is uploaded
-                <AddPhotoAlternateIcon sx={{ fontSize: 40, color: "#005ffe" }} />
-              )}
-
-              {selectedImage ? (
-                <div className="imagePreview">
-                  <img src={selectedImage} alt="Uploaded Preview" />
-                  <button className="cancelButton" onClick={handleCancel}>Cancel</button>
-                </div>
-              ) : (
-                <div className="uploadText">
-                  <label htmlFor="fileInput" className="clickToUpload">
-                    Click to upload
-                  </label> 
-                  <span> or drag to drop.</span>
-                  <input
-                    id="fileInput"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    hidden
-                  />
-                </div>
-              )}
+          <div className="numericSeperation">
+            <div className="host">Checkins</div>
+            <div className="numericInputContainer" onClick={handleMenuOpenCheckins}>
+              <input type="text" placeholder="#Checkins" value={selectedCheckins} readOnly />
             </div>
+            <Menu anchorEl={anchorElCheckins} open={Boolean(anchorElCheckins)} onClose={() => handleMenuCloseCheckins(selectedCheckins)}>
+              <MenuItem onClick={() => handleMenuCloseCheckins('1')}>1 Checkin</MenuItem>
+              <MenuItem onClick={() => handleMenuCloseCheckins('2')}>2 Checkins</MenuItem>
+              <MenuItem onClick={() => handleMenuCloseCheckins('3')}>3 Checkins</MenuItem>
+            </Menu>
           </div>
-          <div className="submitContainer">
-            <div className="formSubmit">
-                Submit
-                
+        </div>
+        <div className="dividerDiv">
+          <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
+        </div>
+        <div className="imageInputContainer">
+          <div className="host">Upload Image</div>
+          <div className="hostAndImageInputContainer">
+              <CameraAltIcon sx={{ color: '#c6cdcf'}} />
+              <input type="file" accept="image/*" onChange={handleImageUpload} />
             </div>
-
-          </div>
 
         </div>
+        <div className="dividerDiv">
+          <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
+        </div>
+        <div className="host">Event description</div>
+        <div id="hostAndImageInputContainerDescription">
+        <textarea placeholder="Event description" rows="4" />
+            </div>
+            <div className="createEventButton">
+        Create Event
       </div>
+      </div>
+      
     </div>
   );
 };
