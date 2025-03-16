@@ -24,6 +24,59 @@ const AddEvent = ({ onClose }) => {
   const [anchorElTime, setAnchorElTime] = useState(null);
   const [selectedTime, setSelectedTime] = useState('');
 
+  const [title, setTitle] = useState('');
+  const [host, setHost] = useState(''); 
+  const [location, setLocation] = useState('');
+  const [description, setDescription] = useState('');
+
+  
+
+  const handleCreateEvent = async () => {
+    const eventDateTime = new Date(`${selectedDate}T${selectedTime}`);
+
+    // Add 24 hours to the eventDateTime
+    const creditExpiryDate = new Date(eventDateTime.getTime() + 24 * 60 * 60 * 1000);
+  
+    // Format creditExpiryDate to 'YYYY-MM-DD HH:MM:SS'
+    const creditExpiry = creditExpiryDate.toISOString().slice(0, 19).replace('T', ' ');
+
+    const formattedTime = selectedTime ? `${selectedTime}:00` : '';
+    
+    const eventData = {
+      title,
+      host,
+      location,
+      date: selectedDate,
+      time: formattedTime,
+      credits: selectedCredits,
+      num_of_checkIns: selectedCheckins,
+      description,
+      credit_expiry: creditExpiry,
+    };
+
+    console.log('Event Data being sent:', eventData);
+
+    try {
+      const response = await fetch('http://127.0.0.1:5000/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventData),
+      });
+      if (response.ok) {
+        alert('Event added successfully!');
+        onClose();
+      } else {
+        alert('Failed to add event.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error adding event.');
+    }
+  };
+
+  
+
+
 
   const handleMenuOpenTime = (event) => {
     setAnchorElTime(event.currentTarget);
@@ -75,6 +128,9 @@ const AddEvent = ({ onClose }) => {
   };
 
 
+  
+
+
   return (
     <div className="eventFormContainer">
       <div className="eventFormContent">
@@ -82,13 +138,13 @@ const AddEvent = ({ onClose }) => {
           <img src={xMark} alt="Close" onClick={onClose} />
         </div>
         <div className="formTitle">
-          <input type="text" placeholder="Give your event a name" />
+          <input type="text" placeholder="Give your event a name" value={title} onChange={(e) => setTitle(e.target.value)}/>
         </div>
         <div className="dividerDiv">
           <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
         </div>
         <div className="dateTime">
-          <div className="dateTimeInputs"  onClick={handleMenuOpenDate}>
+          <div className="dateTimeInputs" onClick={handleMenuOpenDate}>
             <div className="dateTimeImg">
               <CalendarMonthIcon sx={{ color: '#c6cdcf'}} />
             </div>
@@ -128,7 +184,7 @@ const AddEvent = ({ onClose }) => {
               InputLabelProps={{ shrink: true }}
               value={selectedDate}
               onChange={handleDateChange}
-              fullWidth
+              fullWidth 
             />
           </MenuItem>
         </Menu>
@@ -152,7 +208,7 @@ const AddEvent = ({ onClose }) => {
             <div className="host">Host</div>
             <div className="hostAndImageInputContainer">
               <PersonIcon sx={{ color: '#c6cdcf'}} />
-              <input type="text" placeholder="Host Name" />
+              <input type="text" placeholder="Host Name" value={host} onChange={(e) => setHost(e.target.value)} />
             </div>
           </div>
           <div className="numericSeperation">
@@ -175,7 +231,7 @@ const AddEvent = ({ onClose }) => {
             <div className="host">Location</div>
             <div className="hostAndImageInputContainer">
               <LocationOnIcon sx={{ color: '#c6cdcf'}} />
-              <input type="text" placeholder="Location Name" />
+              <input type="text" placeholder="Location Name" value={location} onChange={(e) => setLocation(e.target.value)} />
             </div>
           </div>
           <div className="numericSeperation">
@@ -206,9 +262,9 @@ const AddEvent = ({ onClose }) => {
         </div>
         <div className="host">Event description</div>
         <div id="hostAndImageInputContainerDescription">
-        <textarea placeholder="Event description" rows="4" />
+        <textarea placeholder="Event description" rows="4" value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
-            <div className="createEventButton">
+            <div className="createEventButton" onClick={handleCreateEvent}>
         Create Event
       </div>
       </div>
