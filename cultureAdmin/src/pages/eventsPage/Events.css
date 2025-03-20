@@ -35,3 +35,14 @@
   background-color: #919698;
   transition: background-color 0.3s ease;
 }
+
+.eventDescription{
+    
+    font-weight: bold;
+    margin: 20px;
+}
+
+.descriptionTitle{
+  margin-bottom: 3px;
+  color: #707e7e;
+}

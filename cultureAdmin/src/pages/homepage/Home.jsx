@@ -22,6 +22,7 @@ const Home = () => {
 
   const [data, setData] = useState([]);
 
+
   useEffect(() => {
   
         const loadData = async() =>  {
@@ -32,11 +33,10 @@ const Home = () => {
           setEventCount(json.events.length); // Update event count dynamically
           console.log('done fetching data');
           console.log(json.events);
-          
-          
         }
         loadData()
       },[]);
+
       
   const navigate = useNavigate(); // Initialize navigation function
   return (
@@ -45,19 +45,55 @@ const Home = () => {
       
       <HorizontalNav />
       <div className="mainContent"></div>
+      <div className="userName">
+        <h1>Welcome Admin</h1>
+      </div>
+  
   
         <div className="smalldashboardInfoCard">
+          
         <div className="smallCard" onClick={() => navigate('/events')}>
-            <div className="cardImage">
-            <ConfirmationNumberIcon sx={{color:'white', fontSize:'40px'}}/>
-            </div>
+           
             <div className="cardInfo">
+              
+              <div className="category">Upcoming Events</div>
               <div className="amount">
                 {eventCount}
               </div>
-              <div className="category">Events</div>
-            </div>   
+            </div> 
+
+             <div className="cardImage">
+            <ConfirmationNumberIcon sx={{color:'white', fontSize:'40px'}}/>
+            </div>  
           </div>
+          <div className="smallCard" onClick={() => navigate('/students')}>
+            <div className="cardImage">
+            <GroupsIcon sx={{color:'white', fontSize:'40px'}}/>
+            </div>
+            <div className="cardInfo">
+              <div className="amount">
+                {studentCount}
+              </div>
+              <div className="category">Ongoing</div>
+             
+            </div>
+              
+          </div>
+
+          <div className="smallCard" onClick={() => navigate('/students')}>
+            <div className="cardImage">
+            <GroupsIcon sx={{color:'white', fontSize:'40px'}}/>
+            </div>
+            <div className="cardInfo">
+              <div className="amount">
+                {studentCount}
+              </div>
+              <div className="category">Instructors</div>
+             
+            </div>
+              
+          </div>
+
           <div className="smallCard" onClick={() => navigate('/students')}>
             <div className="cardImage">
             <GroupsIcon sx={{color:'white', fontSize:'40px'}}/>

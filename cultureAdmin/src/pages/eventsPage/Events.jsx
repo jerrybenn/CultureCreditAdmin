@@ -5,11 +5,23 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import TablePagination from '@mui/material/TablePagination';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import Collapse from '@mui/material/Collapse';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 
 const Events = () => {
   const [data, setData] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [openEventId, setOpenEventId] = useState(null); // Track open event for collapse
+  const [dialogOpen, setDialogOpen] = useState(false); // Track dialog state
+  const [selectedEventId, setSelectedEventId] = useState(null); // Store selected event ID
 
   useEffect(() => {
     const loadData = async () => {
@@ -28,27 +40,49 @@ const Events = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const handleClick = (event, eventId) => {
+  const handleMenuClick = (event, eventId) => {
     setAnchorEl(event.currentTarget);
-    setSelectedEvent(eventId);
+    setSelectedEventId(eventId); // Set the clicked event ID
   };
 
-  const handleClose = () => {
+  const handleMenuClose = () => {
     setAnchorEl(null);
-    setSelectedEvent(null);
   };
 
-  const [page, setPage] = React.useState(2);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+  const handleToggleDescription = (eventId) => {
+    setOpenEventId(openEventId === eventId ? null : eventId); // Toggle collapse state
   };
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  // Open dialog when "Send URL" is clicked
+  const handleOpenDialog = (eventId) => {
+    setDialogOpen(true);
+    setSelectedEventId(eventId); // Ensure correct event ID is passed
+    handleMenuClose(); // Close the menu when opening the dialog
   };
+
+  // Close dialog
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
+
+  // Log the event ID when sending an email
+  const handleSendEmail = () => {
+    console.log(`An email was just sent for event ID: ${selectedEventId}`);
+    setDialogOpen(false); // Close the dialog after sending
+  };
+
+  // Close collapse when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!event.target.closest(".eventRow")) {
+        setOpenEventId(null);
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, []);
 
   return (
     <div className="eventsPageContainer">
@@ -57,6 +91,7 @@ const Events = () => {
         <table className="eventsTable">
           <thead>
             <tr>
+              <th></th>
               <th>Event Name</th>
               <th>Host</th>
               <th>Location</th>
@@ -70,42 +105,83 @@ const Events = () => {
           </thead>
           <tbody>
             {data.map((event, index) => (
-              <tr key={index}>
-                <td>{event.title}</td>
-                <td>{event.host}</td>
-                <td>{event.location}</td>
-                <td>{formatDate(event.date)}</td>
-                <td>{event.time}</td>
-                <td>{event.credits}</td>
-                <td>{event.num_of_checkins}</td>
-                <td>{event.credit_expiry}</td>
-                <td>
-                    <MoreHorizIcon onClick={(e) => handleClick(e, event.id)}/>
-                </td>
-              </tr>
+              <React.Fragment key={index}>
+                {/* Main Row */}
+                <tr className="eventRow">
+                  <td onClick={(e) => { e.stopPropagation(); handleToggleDescription(event.id); }} style={{ cursor: "pointer" }}>
+                    {openEventId === event.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                  </td>
+                  <td>{event.title}</td>
+                  <td>{event.host}</td>
+                  <td>{event.location}</td>
+                  <td>{formatDate(event.date)}</td>
+                  <td>{event.time}</td>
+                  <td>{event.credits}</td>
+                  <td>{event.num_of_checkins}</td>
+                  <td>{event.credit_expiry}</td>
+                  <td>
+                    <MoreHorizIcon onClick={(e) => handleMenuClick(e, event.id)} />
+                  </td>
+                </tr>
+
+                {/* Collapsible Row */}
+                <tr>
+                  <td colSpan="10" style={{ padding: 0 }}>
+                    <Collapse in={openEventId === event.id} timeout="auto" unmountOnExit>
+                      <div className="eventDescription">
+                        <div className="descriptionTitle">Event Description:</div>
+                        {event.description}
+                      </div>
+                    </Collapse>
+                  </td>
+                </tr>
+              </React.Fragment>
             ))}
           </tbody>
         </table>
 
         {/* Dropdown Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          <MenuItem onClick={() => { console.log(`Edit event ${selectedEvent}`); handleClose(); }}>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+          <MenuItem onClick={() => { console.log(`Edit event ${selectedEventId}`); handleMenuClose(); }}>
             Edit
           </MenuItem>
-          <MenuItem onClick={() => { console.log(`Attendance for event ${selectedEvent}`); handleClose(); }}>
+          <MenuItem onClick={() => { console.log(`Attendance for event ${selectedEventId}`); handleMenuClose(); }}>
             Attendance
           </MenuItem>
-          <MenuItem onClick={() => { console.log(`Delete event ${selectedEvent}`); handleClose(); }}>
+          <MenuItem onClick={() => { console.log(`Delete event ${selectedEventId}`); handleMenuClose(); }}>
             Delete
           </MenuItem>
-          <MenuItem onClick={() => { console.log(`Send url for event ${selectedEvent}`); handleClose(); }}>
-            Send Url
+          <MenuItem onClick={() => handleOpenDialog(selectedEventId)}>
+            Send URL
           </MenuItem>
         </Menu>
+
+        {/* Send URL Dialog */}
+        <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+          <DialogTitle>Send Event URL</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Enter the recipient's email to send the event URL.
+            </DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="email"
+              label="Recipient Email"
+              type="email"
+              fullWidth
+              variant="outlined"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="secondary">
+              Cancel
+            </Button>
+            <Button onClick={handleSendEmail} variant="contained" color="primary">
+              Send Email
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </div>
   );

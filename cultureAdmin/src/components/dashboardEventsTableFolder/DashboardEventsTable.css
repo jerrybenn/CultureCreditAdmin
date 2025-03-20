@@ -1,9 +1,11 @@
 .table-container {
     margin-top: 20px;
+background-color: violet;
+width: 100%;
   }
   
   .event-table {
-    width: 60%;
+    width: 100%;
     border-collapse: collapse;
     background-color: rgb(255, 255, 255);
     color: rgb(0, 0, 0);
