@@ -7,9 +7,8 @@ import './Home.css'
 import DashboardEventsTable from '../../components/dashboardEventsTableFolder/DashboardEventsTable.jsx';
 import DashboardGraph from '../../components/dashboardGraphFolder/DashboardGraph.jsx';
 
-
-import clipboardIcon from '../../components/assets/clipboard-check.svg'
-import community from '../../components/assets/community.svg'
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import GroupsIcon from '@mui/icons-material/Groups';
 
 
 
@@ -17,48 +16,83 @@ import community from '../../components/assets/community.svg'
 
 
 const Home = () => {
-  let eventCount = 0;
+  
   const studentCount = 0;
+  const [eventCount, setEventCount] = useState(0); // Store event count separately
 
   const [data, setData] = useState([]);
+
 
   useEffect(() => {
   
         const loadData = async() =>  {
           console.log('fetching data');
-          const d = await fetch('http://127.0.0.1:5000/events')
+          const d = await fetch('http://127.0.0.1:3841/events')
           const json = await d.json()
           setData(json.events)
+          setEventCount(json.events.length); // Update event count dynamically
           console.log('done fetching data');
+          console.log(json.events);
         }
         loadData()
-  
       },[]);
 
-      eventCount = data.length;
-  
+      
   const navigate = useNavigate(); // Initialize navigation function
   return (
     
     <div className = 'dashBoardContainer'>
       
       <HorizontalNav />
+      <div className="mainContent"></div>
   
         <div className="smalldashboardInfoCard">
+          
         <div className="smallCard" onClick={() => navigate('/events')}>
-            <div className="cardImage">
-            <img src={clipboardIcon} alt="" />
-            </div>
+           
             <div className="cardInfo">
+              
+              <div className="category">Upcoming Events</div>
               <div className="amount">
                 {eventCount}
               </div>
-              <div className="category">Events</div>
-            </div>   
+            </div> 
+
+             <div className="cardImage">
+            <ConfirmationNumberIcon sx={{color:'white', fontSize:'40px'}}/>
+            </div>  
           </div>
           <div className="smallCard" onClick={() => navigate('/students')}>
             <div className="cardImage">
-            <img src={community} alt="" />
+            <GroupsIcon sx={{color:'white', fontSize:'40px'}}/>
+            </div>
+            <div className="cardInfo">
+              <div className="amount">
+                {studentCount}
+              </div>
+              <div className="category">Ongoing</div>
+             
+            </div>
+              
+          </div>
+
+          <div className="smallCard" onClick={() => navigate('/students')}>
+            <div className="cardImage">
+            <GroupsIcon sx={{color:'white', fontSize:'40px'}}/>
+            </div>
+            <div className="cardInfo">
+              <div className="amount">
+                {studentCount}
+              </div>
+              <div className="category">Instructors</div>
+             
+            </div>
+              
+          </div>
+
+          <div className="smallCard" onClick={() => navigate('/students')}>
+            <div className="cardImage">
+            <GroupsIcon sx={{color:'white', fontSize:'40px'}}/>
             </div>
             <div className="cardInfo">
               <div className="amount">
@@ -70,15 +104,14 @@ const Home = () => {
               
           </div>
       </div>
-      <div className="largeInfoCard">
+      <div className="largedashboardInfoCard">
         <DashboardGraph />
         <DashboardEventsTable />
        
        
         
       </div>
-      
-      dashboard</div>
+    </div>
   )
 }
 

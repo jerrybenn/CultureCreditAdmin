@@ -1,13 +1,17 @@
 .table-container {
     margin-top: 20px;
+    
+width: 100%;
   }
   
   .event-table {
-    width: 60%;
+    width: 100%;
     border-collapse: collapse;
     background-color: rgb(255, 255, 255);
     color: rgb(0, 0, 0);
     text-align: left;
+   
+    border-radius: 8px;
   }
   
   .event-table th,
@@ -24,4 +28,5 @@
     background-color: #919698;
     transition: background-color 0.3s ease;
   }
+  
   

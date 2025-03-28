@@ -12,8 +12,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const webLink = "http://DSU-Matlab-02.desu.edu:5000/login";
-  const localLink = "http://127.0.0.1:5000/web/admin/";
+  const webLink = "http://127.0.0.1:3841/login";
+  const localLink = "http://127.0.0.1:3841/web/admin/";
 
   const handleLogin = async() => {
 

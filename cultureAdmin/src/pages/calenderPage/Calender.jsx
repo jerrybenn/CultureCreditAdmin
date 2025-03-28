@@ -1,8 +1,9 @@
 import React from 'react'
+import HorizontalNav from '../../components/horizontalNavbar/HorizontalNav.jsx'
 
 const Calender = () => {
   return (
-    <div>Calender</div>
+    <div><HorizontalNav />Calender</div>
   )
 }
 

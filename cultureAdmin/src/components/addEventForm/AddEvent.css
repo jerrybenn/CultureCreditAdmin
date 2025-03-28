@@ -9,25 +9,27 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 1;
+    
 }
 
 .eventFormContent{
     background: white;
+    border-radius: 5px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Adds elevation effect */
+    padding: 20px;
    
 }
 
-.formTitle{
+.closeContainer{
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     padding: 10px;
-    
-    align-items: center;
-
 }
 
-.formTitle img{
-    padding:5px;
+
+.closeContainer img{
+    padding:3px;
     background-color: rgb(255, 255, 255);
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Adds elevation effect */
     justify-content: center;
@@ -35,57 +37,145 @@
     border-radius: 5px;
 }
 
-.formInputContent{
-    margin: 20px;
-}
-
-.inputContainer{
-    background-color: #eaeaea;
-    padding: 10px;
-    border-radius: 5px;
+.dividerDiv{
     margin-top: 10px;
-    width: 500px;
+    margin-bottom: 10px;
+}
+
+.formTitle input::placeholder {
+    color: rgb(0, 0, 0);
+    
+  }
+
+.formTitle input{
+    font-size: medium;
+    font-weight: 600;
+    color: black;
+}
+
+.dateTime{
+    justify-content: space-between;
     display: flex;
+}
+
+.dateTimeInputs{
+    background-color: #f5fafb;
+    display: flex;
+    flex-direction: row;
     align-items: center;
+    border-radius: 5px;
+    width: fit-content;
+
 }
 
-.inputContainer input::placeholder { 
-    font-size: 17px;
-} 
-
-.addMore{
+.dateTimeImg{
+    background-color: #e7eded;
     display: flex;
-    white-space: nowrap;
-    background-color: white;
-    padding: 10px;
-    border-radius: 8px; /* Prevents text from wrapping */
-}
-
-.overcallNumericalInputContainer {
-    display: flex;
-   
-    gap: 20px; /* Adds spacing between the two date fields */
-    justify-content: space-between; /* Ensures even spacing */
-    max-width: 520px;
-}
-
-.numericalInputContainer {
-    display: flex;
-    flex-direction: column; /* Puts label on top and input below */
-    width: 45%; /* Ensures two columns take equal width */
-}
-
-.numericalInput {
-    background-color: #eaeaea;
+    width: fit-content;
     padding: 10px;
     border-radius: 5px;
-    margin-top: 5px;
+    margin: 10px;
 }
 
-.numericalInput input {
-    width: 100%; /* Makes the input take full width */
-    border: none;
+.dateTimeTitle{
+    color: #707e7e;
+    font-weight: bold;
+}
+
+.arrows{
+    display: flex;
+    flex-direction: column;
+}
+
+.dateTimeDisplay{
+    color:#707e7e
+}
+
+.hostAndImageInputContainer{
+    background-color: #f5fafb;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-radius: 5px;
+    padding: 10px;
     
-    outline: none;
+}
+
+.hostAndImageContainer{
+    display: flex;
+    gap:10px;
+}
+
+.numericInputContainer{
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #f5fafb;
+    height: 25px;
+    
+   
+}
+.seperationContainer{
+    width: 100%
+}
+
+.host{
+    font-weight: 500;
+}
+
+#hostAndImageInputContainerDescription {
+    background-color: #f5fafb;
+    border-radius: 5px;
+    padding: 10px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+}
+
+#hostAndImageInputContainerDescription textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
     background: transparent;
+    resize: none;
+    font-size: 14px;
+    color: black;
+    outline: none;
+    font-family: inherit;
+    text-align: left; /* Align text to the left */
+}
+
+#hostAndImageInputContainerDescription textarea::placeholder {
+    text-align: left; /* Ensures placeholder is at the top-left */
+    color: #707e7e;
+    font-weight: 500;
+}
+
+.createEventButton{
+    background-color:#06ADE4;
+    display: flex;
+    color: white;
+    flex-direction: row;
+    font-weight: bolder;
+    align-items: center;
+    border-radius: 5px;
+    justify-content: center;
+    padding: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.imageExpire {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 10px; /* Optional: for consistent spacing */
+}
+
+.imageExpire .numericInputContainer {
+    border-radius: 5px;
+
+    background-color: #f5fafb;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
