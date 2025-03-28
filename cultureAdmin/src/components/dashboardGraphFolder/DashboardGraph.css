@@ -1,6 +1,7 @@
 .graphContainer{
     background-color: white;
-    width: 45%;
+    width: 100%;
     margin-top: 20px;
-    height: 400px;
+    height: fit-content;
+    border-radius: 10px;
 }

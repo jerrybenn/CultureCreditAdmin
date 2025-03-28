@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom'; // Import useLocation
+import { useLocation } from 'react-router-dom';
 import './HorizontalNav.css';
 import searchIcon from '../assets/search.svg';
 import bellIcon from '../assets/bell.svg';
 import AddEvent from '../../components/addEventForm/AddEvent.jsx';
 
-
-const HorizontalNav = () => {
+const HorizontalNav = ({ searchQuery, setSearchQuery }) => {
   const [showModal, setShowModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  const location = useLocation(); // Get the current route
-  
-  // Determine placeholder based on the current route
+
+  const location = useLocation();
+
   const getPlaceholder = () => {
     if (location.pathname === "/events") {
       return "Search events";
@@ -35,7 +32,7 @@ const HorizontalNav = () => {
         <div className="searchInput">
           <input
             type="text"
-            placeholder={getPlaceholder()} // Dynamic placeholder
+            placeholder={getPlaceholder()}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleSearch}

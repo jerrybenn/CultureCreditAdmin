@@ -4,7 +4,6 @@ import './Events.css';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import TablePagination from '@mui/material/TablePagination';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Collapse from '@mui/material/Collapse';
@@ -15,21 +14,25 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { Tabs, Tab } from '@mui/material';
+import TablePagination from '@mui/material/TablePagination';
 
 const Events = () => {
   const [data, setData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
-  const [openEventId, setOpenEventId] = useState(null); // Track open event for collapse
-  const [dialogOpen, setDialogOpen] = useState(false); // Track dialog state
-  const [selectedEventId, setSelectedEventId] = useState(null); // Store selected event ID
+  const [openEventId, setOpenEventId] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState(null);
+  const [tabValue, setTabValue] = useState(0);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     const loadData = async () => {
-      console.log('fetching data');
-      const d = await fetch('http://127.0.0.1:5000/events');
-      const json = await d.json();
+      const response = await fetch('http://127.0.0.1:3841/events');
+      const json = await response.json();
       setData(json.events);
-      console.log('done fetching data');
     };
     loadData();
   }, []);
@@ -37,12 +40,16 @@ const Events = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
   const handleMenuClick = (event, eventId) => {
     setAnchorEl(event.currentTarget);
-    setSelectedEventId(eventId); // Set the clicked event ID
+    setSelectedEventId(eventId);
   };
 
   const handleMenuClose = () => {
@@ -50,28 +57,40 @@ const Events = () => {
   };
 
   const handleToggleDescription = (eventId) => {
-    setOpenEventId(openEventId === eventId ? null : eventId); // Toggle collapse state
+    setOpenEventId(openEventId === eventId ? null : eventId);
   };
 
-  // Open dialog when "Send URL" is clicked
   const handleOpenDialog = (eventId) => {
     setDialogOpen(true);
-    setSelectedEventId(eventId); // Ensure correct event ID is passed
-    handleMenuClose(); // Close the menu when opening the dialog
+    setSelectedEventId(eventId);
+    handleMenuClose();
   };
 
-  // Close dialog
   const handleCloseDialog = () => {
     setDialogOpen(false);
   };
 
-  // Log the event ID when sending an email
   const handleSendEmail = () => {
-    console.log(`An email was just sent for event ID: ${selectedEventId}`);
-    setDialogOpen(false); // Close the dialog after sending
+    const selectedEvent = data.find((event) => event.id === selectedEventId);
+    const qrCodeUrl = `http://127.0.0.1:3841/qrcode/${selectedEvent?.nonce}`;
+    console.log(`QR Code URL: ${qrCodeUrl}`);
+    setDialogOpen(false);
   };
 
-  // Close collapse when clicking outside
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+    setPage(0);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (!event.target.closest(".eventRow")) {
@@ -84,9 +103,28 @@ const Events = () => {
     };
   }, []);
 
+  const today = new Date();
+
+  const filteredEvents = data.filter((event) => {
+    const eventDate = new Date(event.date);
+    const matchesTab = tabValue === 0 ? eventDate >= today : eventDate < today;
+    const matchesSearch =
+      searchQuery.trim() === "" ||
+      event.title.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
+
   return (
     <div className="eventsPageContainer">
-      <HorizontalNav />
+      <HorizontalNav searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+
+      <div className="tabsContainer">
+        <Tabs value={tabValue} onChange={handleTabChange} aria-label="event tabs">
+          <Tab label="Upcoming Events" />
+          <Tab label="Past Events" />
+        </Tabs>
+      </div>
+
       <div className="mainContent">
         <table className="eventsTable">
           <thead>
@@ -104,49 +142,84 @@ const Events = () => {
             </tr>
           </thead>
           <tbody>
-            {data.map((event, index) => (
-              <React.Fragment key={index}>
-                {/* Main Row */}
-                <tr className="eventRow">
-                  <td onClick={(e) => { e.stopPropagation(); handleToggleDescription(event.id); }} style={{ cursor: "pointer" }}>
-                    {openEventId === event.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                  </td>
-                  <td>{event.title}</td>
-                  <td>{event.host}</td>
-                  <td>{event.location}</td>
-                  <td>{formatDate(event.date)}</td>
-                  <td>{event.time}</td>
-                  <td>{event.credits}</td>
-                  <td>{event.num_of_checkins}</td>
-                  <td>{event.credit_expiry}</td>
-                  <td>
-                    <MoreHorizIcon onClick={(e) => handleMenuClick(e, event.id)} />
-                  </td>
-                </tr>
+            {filteredEvents
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((event, index) => (
+                <React.Fragment key={index}>
+                  <tr className="eventRow">
+                    <td
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleDescription(event.id);
+                      }}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {openEventId === event.id ? (
+                        <KeyboardArrowUpIcon />
+                      ) : (
+                        <KeyboardArrowDownIcon />
+                      )}
+                    </td>
+                    <td>{event.title}</td>
+                    <td>{event.host}</td>
+                    <td>{event.location}</td>
+                    <td>{formatDate(event.date)}</td>
+                    <td>{event.time}</td>
+                    <td>{event.credits}</td>
+                    <td>{event.num_of_checkins}</td>
+                    <td>{event.credit_expiry}</td>
+                    <td>
+                      <MoreHorizIcon onClick={(e) => handleMenuClick(e, event.id)} />
+                    </td>
+                  </tr>
 
-                {/* Collapsible Row */}
-                <tr>
-                  <td colSpan="10" style={{ padding: 0 }}>
-                    <Collapse in={openEventId === event.id} timeout="auto" unmountOnExit>
-                      <div className="eventDescription">
-                        <div className="descriptionTitle">Event Description:</div>
-                        {event.description}
-                      </div>
-                    </Collapse>
-                  </td>
-                </tr>
-              </React.Fragment>
-            ))}
+                  <tr>
+                    <td colSpan="10" style={{ padding: 0 }}>
+                      <Collapse in={openEventId === event.id} timeout="auto" unmountOnExit>
+                        <div className="eventDescription">
+                          <div className="descriptionTitle">Event Description:</div>
+                          {event.description}
+                        </div>
+                      </Collapse>
+                    </td>
+                  </tr>
+                </React.Fragment>
+              ))}
+
+            <tr>
+              <td colSpan="10" style={{ padding: 0 }}>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={filteredEvents.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  sx={{
+                    padding: '8px px',
+                    '& .MuiTablePagination-toolbar': {
+                      minHeight: '55px',
+                      padding: 0,
+                      marginRight: '20px',
+                    },
+                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                      margin: 0,
+                      marginRight: '30px',
+                    },
+                    '& .MuiInputBase-root': {
+                      marginRight: '30px',
+                    }
+                  }}
+                />
+              </td>
+            </tr>
           </tbody>
         </table>
 
-        {/* Dropdown Menu */}
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
           <MenuItem onClick={() => { console.log(`Edit event ${selectedEventId}`); handleMenuClose(); }}>
             Edit
-          </MenuItem>
-          <MenuItem onClick={() => { console.log(`Attendance for event ${selectedEventId}`); handleMenuClose(); }}>
-            Attendance
           </MenuItem>
           <MenuItem onClick={() => { console.log(`Delete event ${selectedEventId}`); handleMenuClose(); }}>
             Delete
@@ -156,7 +229,6 @@ const Events = () => {
           </MenuItem>
         </Menu>
 
-        {/* Send URL Dialog */}
         <Dialog open={dialogOpen} onClose={handleCloseDialog}>
           <DialogTitle>Send Event URL</DialogTitle>
           <DialogContent>

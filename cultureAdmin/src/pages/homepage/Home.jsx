@@ -27,7 +27,7 @@ const Home = () => {
   
         const loadData = async() =>  {
           console.log('fetching data');
-          const d = await fetch('http://127.0.0.1:5000/events')
+          const d = await fetch('http://127.0.0.1:3841/events')
           const json = await d.json()
           setData(json.events)
           setEventCount(json.events.length); // Update event count dynamically
@@ -45,10 +45,6 @@ const Home = () => {
       
       <HorizontalNav />
       <div className="mainContent"></div>
-      <div className="userName">
-        <h1>Welcome Admin</h1>
-      </div>
-  
   
         <div className="smalldashboardInfoCard">
           

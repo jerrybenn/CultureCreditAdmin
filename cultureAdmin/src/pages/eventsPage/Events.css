@@ -46,3 +46,22 @@
   margin-bottom: 3px;
   color: #707e7e;
 }
+
+.tabsContainer{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 16px 24px;
+  background-color: #efefef;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}

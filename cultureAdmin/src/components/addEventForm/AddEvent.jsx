@@ -13,6 +13,11 @@ import Menu from '@mui/material/Menu';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import TextField from '@mui/material/TextField';
 
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
+
 const AddEvent = ({ onClose }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [anchorElCredits, setAnchorElCredits] = useState(null);
@@ -23,25 +28,22 @@ const AddEvent = ({ onClose }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [anchorElTime, setAnchorElTime] = useState(null);
   const [selectedTime, setSelectedTime] = useState('');
+  const [expireDate, setExpireDate] = useState(null);
 
   const [title, setTitle] = useState('');
-  const [host, setHost] = useState(''); 
+  const [host, setHost] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
 
-  
-
   const handleCreateEvent = async () => {
     const eventDateTime = new Date(`${selectedDate}T${selectedTime}`);
-
-    // Add 24 hours to the eventDateTime
-    const creditExpiryDate = new Date(eventDateTime.getTime() + 24 * 60 * 60 * 1000);
-  
-    // Format creditExpiryDate to 'YYYY-MM-DD HH:MM:SS'
-    const creditExpiry = creditExpiryDate.toISOString().slice(0, 19).replace('T', ' ');
+    const defaultCreditExpiry = new Date(eventDateTime.getTime() + 24 * 60 * 60 * 1000);
+    const creditExpiry = expireDate
+      ? dayjs(expireDate).format('YYYY-MM-DD HH:mm:ss')
+      : defaultCreditExpiry.toISOString().slice(0, 19).replace('T', ' ');
 
     const formattedTime = selectedTime ? `${selectedTime}:00` : '';
-    
+
     const eventData = {
       title,
       host,
@@ -57,7 +59,7 @@ const AddEvent = ({ onClose }) => {
     console.log('Event Data being sent:', eventData);
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/events', {
+      const response = await fetch('http://127.0.0.1:3841/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventData),
@@ -73,10 +75,6 @@ const AddEvent = ({ onClose }) => {
       alert('Error adding event.');
     }
   };
-
-  
-
-
 
   const handleMenuOpenTime = (event) => {
     setAnchorElTime(event.currentTarget);
@@ -127,10 +125,6 @@ const AddEvent = ({ onClose }) => {
     setSelectedDate(event.target.value);
   };
 
-
-  
-
-
   return (
     <div className="eventFormContainer">
       <div className="eventFormContent">
@@ -138,7 +132,7 @@ const AddEvent = ({ onClose }) => {
           <img src={xMark} alt="Close" onClick={onClose} />
         </div>
         <div className="formTitle">
-          <input type="text" placeholder="Give your event a name" value={title} onChange={(e) => setTitle(e.target.value)}/>
+          <input type="text" placeholder="Give your event a name" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div className="dividerDiv">
           <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
@@ -146,37 +140,33 @@ const AddEvent = ({ onClose }) => {
         <div className="dateTime">
           <div className="dateTimeInputs" onClick={handleMenuOpenDate}>
             <div className="dateTimeImg">
-              <CalendarMonthIcon sx={{ color: '#c6cdcf'}} />
+              <CalendarMonthIcon sx={{ color: '#c6cdcf' }} />
             </div>
             <div className="dateTimeText">
               <div className="dateTimeTitle">Day</div>
               <div className="dateTimeDisplay">{selectedDate || "Select Date"}</div>
             </div>
             <div className="arrows">
-              <UnfoldMoreIcon sx={{ color: '#c6cdcf'}}/>
+              <UnfoldMoreIcon sx={{ color: '#c6cdcf' }} />
             </div>
           </div>
           <div className="dateTimeInputs" onClick={handleMenuOpenTime}>
             <div className="dateTimeImg">
-              <AccessTimeIcon sx={{ color: '#c6cdcf'}} />
+              <AccessTimeIcon sx={{ color: '#c6cdcf' }} />
             </div>
             <div className="dateTimeText">
               <div className="dateTimeTitle">Time</div>
               <div className="dateTimeDisplay">{selectedTime || "Select Time"}</div>
             </div>
             <div className="arrows">
-              <UnfoldMoreIcon sx={{ color: '#c6cdcf'}} />
+              <UnfoldMoreIcon sx={{ color: '#c6cdcf' }} />
             </div>
           </div>
         </div>
         <div className="dividerDiv">
           <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
         </div>
-        <Menu
-          anchorEl={anchorElDate}
-          open={Boolean(anchorElDate)}
-          onClose={handleMenuCloseDate}
-        >
+        <Menu anchorEl={anchorElDate} open={Boolean(anchorElDate)} onClose={handleMenuCloseDate}>
           <MenuItem>
             <TextField
               type="date"
@@ -184,12 +174,10 @@ const AddEvent = ({ onClose }) => {
               InputLabelProps={{ shrink: true }}
               value={selectedDate}
               onChange={handleDateChange}
-              fullWidth 
+              fullWidth
             />
           </MenuItem>
         </Menu>
-
-        {/* Time Menu */}
         <Menu anchorEl={anchorElTime} open={Boolean(anchorElTime)} onClose={handleMenuCloseTime}>
           <MenuItem>
             <TextField
@@ -202,12 +190,11 @@ const AddEvent = ({ onClose }) => {
             />
           </MenuItem>
         </Menu>
-
         <div className="hostAndImageContainer">
           <div className="seperationContainer">
             <div className="host">Host</div>
             <div className="hostAndImageInputContainer">
-              <PersonIcon sx={{ color: '#c6cdcf'}} />
+              <PersonIcon sx={{ color: '#c6cdcf' }} />
               <input type="text" placeholder="Host Name" value={host} onChange={(e) => setHost(e.target.value)} />
             </div>
           </div>
@@ -230,7 +217,7 @@ const AddEvent = ({ onClose }) => {
           <div className="seperationContainer">
             <div className="host">Location</div>
             <div className="hostAndImageInputContainer">
-              <LocationOnIcon sx={{ color: '#c6cdcf'}} />
+              <LocationOnIcon sx={{ color: '#c6cdcf' }} />
               <input type="text" placeholder="Location Name" value={location} onChange={(e) => setLocation(e.target.value)} />
             </div>
           </div>
@@ -249,26 +236,62 @@ const AddEvent = ({ onClose }) => {
         <div className="dividerDiv">
           <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
         </div>
-        <div className="imageInputContainer">
-          <div className="host">Upload Image</div>
-          <div className="hostAndImageInputContainer">
-              <CameraAltIcon sx={{ color: '#c6cdcf'}} />
+
+        <div className="imageExpire">
+          <div className="seperationContainer">
+            <div className="host">Upload Image</div>
+            <div className="hostAndImageInputContainer">
+              <CameraAltIcon sx={{ color: '#c6cdcf' }} />
               <input type="file" accept="image/*" onChange={handleImageUpload} />
             </div>
-
+          </div>
+          <div className="numericSeperation">
+            <div className="host">Expire</div>
+            <div className="numericInputContainer">
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="Expire Date"
+                  value={expireDate}
+                  onChange={(newValue) => setExpireDate(newValue)}
+                  slotProps={{
+                    textField: {
+                      size: 'small',
+                      fullWidth: true,
+                      sx: {
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            border: 'none',
+                          },
+                          
+                          borderRadius: '8px',
+                         
+                          '& .MuiInputAdornment-root': {
+                            display: 'none',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          display: 'none',
+                        },
+                      },
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+            </div>
+          </div>
         </div>
+
         <div className="dividerDiv">
           <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
         </div>
         <div className="host">Event description</div>
         <div id="hostAndImageInputContainerDescription">
-        <textarea placeholder="Event description" rows="4" value={description} onChange={(e) => setDescription(e.target.value)} />
-            </div>
-            <div className="createEventButton" onClick={handleCreateEvent}>
-        Create Event
+          <textarea placeholder="Event description" rows="4" value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+        <div className="createEventButton" onClick={handleCreateEvent}>
+          Create Event
+        </div>
       </div>
-      </div>
-      
     </div>
   );
 };
