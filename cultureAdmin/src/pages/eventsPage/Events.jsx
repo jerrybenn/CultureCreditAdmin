@@ -27,6 +27,10 @@ const Events = () => {
   const [tabValue, setTabValue] = useState(0);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editedEvent, setEditedEvent] = useState({});
+
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -90,6 +94,8 @@ const Events = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+  
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -218,9 +224,15 @@ const Events = () => {
         </table>
 
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-          <MenuItem onClick={() => { console.log(`Edit event ${selectedEventId}`); handleMenuClose(); }}>
-            Edit
-          </MenuItem>
+        <MenuItem onClick={() => {
+  const eventToEdit = data.find((e) => e.id === selectedEventId);
+  setEditedEvent(eventToEdit || {});
+  setEditDialogOpen(true);
+  handleMenuClose();
+}}>
+  Edit
+</MenuItem>
+
           <MenuItem onClick={() => { console.log(`Delete event ${selectedEventId}`); handleMenuClose(); }}>
             Delete
           </MenuItem>
@@ -254,6 +266,131 @@ const Events = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
+  <DialogTitle>Edit Event</DialogTitle>
+  <DialogContent>
+    <TextField
+      margin="dense"
+      label="Event Name"
+      fullWidth
+      value={editedEvent.title || ''}
+      onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })}
+    />
+    <TextField
+      margin="dense"
+      label="Host"
+      fullWidth
+      value={editedEvent.host || ''}
+      onChange={(e) => setEditedEvent({ ...editedEvent, host: e.target.value })}
+    />
+    <TextField
+      margin="dense"
+      label="Location"
+      fullWidth
+      value={editedEvent.location || ''}
+      onChange={(e) => setEditedEvent({ ...editedEvent, location: e.target.value })}
+    />
+    <TextField
+      margin="dense"
+      label="Date"
+      type="date"
+      fullWidth
+      InputLabelProps={{ shrink: true }}
+      value={editedEvent.date || ''}
+      onChange={(e) => setEditedEvent({ ...editedEvent, date: e.target.value })}
+    />
+    <TextField
+      margin="dense"
+      label="Time"
+      type="time"
+      fullWidth
+      InputLabelProps={{ shrink: true }}
+      value={editedEvent.time || ''}
+      onChange={(e) => setEditedEvent({ ...editedEvent, time: e.target.value })}
+    />
+    <TextField
+      margin="dense"
+      label="Credits"
+      fullWidth
+      value={editedEvent.credits || ''}
+      onChange={(e) => setEditedEvent({ ...editedEvent, credits: e.target.value })}
+    />
+    <TextField
+      margin="dense"
+      label="Checkins"
+      fullWidth
+      value={editedEvent.num_of_checkins || ''}
+      onChange={(e) => setEditedEvent({ ...editedEvent, num_of_checkins: e.target.value })}
+    />
+    <TextField
+  margin="dense"
+  label="Expiration"
+  type="datetime-local"
+  fullWidth
+  InputLabelProps={{ shrink: true }}
+  value={
+    editedEvent.credit_expiry
+      ? new Date(editedEvent.credit_expiry).toISOString().slice(0, 16)
+      : ''
+  }
+  onChange={(e) =>
+    setEditedEvent({ ...editedEvent, credit_expiry: e.target.value })
+  }
+/>
+    <TextField
+      margin="dense"
+      label="Description"
+      fullWidth
+      multiline
+      rows={4}
+      value={editedEvent.description || ''}
+      onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })}
+    />
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setEditDialogOpen(false)} color="secondary">
+      Cancel
+    </Button>
+    <Button
+  variant="contained"
+  onClick={async () => {
+    try {
+      // Format credit_expiry to match what Flask expects: "YYYY-MM-DD HH:MM:SS"
+      const payload = {
+        ...editedEvent,
+        credit_expiry: new Date(editedEvent.credit_expiry)
+          .toISOString()
+          .slice(0, 19)
+          .replace('T', ' '),
+      };
+
+      const res = await fetch(`http://127.0.0.1:3841/events/${editedEvent.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const updated = data.map(ev => ev.id === editedEvent.id ? payload : ev);
+        setData(updated);
+        setEditDialogOpen(false);
+        alert('Event updated successfully!');
+      } else {
+        alert('Failed to update event.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error updating event.');
+    }
+  }}
+>
+  Save Changes
+</Button>
+
+  </DialogActions>
+</Dialog>
+
       </div>
     </div>
   );

@@ -1,0 +1,128 @@
+.studentCardsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .studentCard {
+    width: 300px;
+    height: fit-content;
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 20px; /* Add spacing between stacked cards on mobile */
+    overflow: hidden;    /* Prevent anything from breaking out of the card */
+    position: relative;  /* Helps avoid unwanted stacking context issues */
+      
+  }
+  
+  .studentCard:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .studentCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .studentCardBody {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .profileContainer {
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    padding: 10px;
+  }
+  
+  .profileInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding-left: 10px;
+    margin: 10px;
+  }
+  
+  .profileName {
+    font-size: 30px;
+    font-weight: 600;
+  }
+  
+  .profileEmail {
+    color: gray;
+  }
+  
+  .studentCardFooter {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .attendanceButton {
+    background-color: #0bade4;
+    border-radius: 10px;
+    padding: 10px;
+    color: #ffffff;
+  }
+
+  
+  
+  .infoHeader {
+    font-size: 16px;
+    font-weight: 600;
+    color: gray;
+  }
+  
+  .infoNumber {
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .infoContainer {
+    /* Reserved for future layout rules */
+  }
+  
+  .cardContent {
+    margin: 20px;
+  }
+  
+  .studentCardFooter{
+    margin-top: 30px;
+  }
+
+  .attendanceButton:hover{
+    background-color: #0989b4;
+    cursor: pointer;
+  }
+
+  .editProfileButton{
+    color: #0bade4;
+
+  }
+
+  .editProfileButton:hover{
+    color: #0989b4;
+    cursor: pointer;
+  }
+
+  .profileDeviceID{
+    color: gray;
+    padding-top: 10px;
+  }
+
+  .profileName{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  

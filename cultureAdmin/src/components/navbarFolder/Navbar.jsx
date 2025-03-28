@@ -9,6 +9,7 @@ import dashBoardIcon from '../../components/assets/stats-down-square.svg';
 import eventsIcon from '../../components/assets/task-list.svg';
 import logout from '../../components/assets/log-out.svg';
 import group from '../../components/assets/group.svg';
+import bookmarkBook from '../../components/assets/bookmark-book.svg';
 
 
 
@@ -42,6 +43,13 @@ const Navbar = () => {
                 <div> <img src={calendar} alt="" /></div>
                 <div className="navLink">
                     <Link to='/calender'>Calender</Link>
+                </div>
+            </div>
+
+            <div className="linkContainer">
+                <div> <img src={bookmarkBook} alt="" /></div>
+                <div className="navLink">
+                    <Link to='/instructor'>Instructor</Link>
                 </div>
             </div>
             <div className='underline'></div>
