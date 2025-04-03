@@ -8,6 +8,7 @@ import Login from './pages/loginFolder/Login';
 import Events from './pages/eventsPage/Events';
 import Calender from './pages/calenderPage/Calender';
 import Students from './pages/studentsPage/Students';
+import Instructor from './pages/instructorPage/Instructor';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function MainContent() {
           <Route path= "/events" element={<Events />} />
           <Route path= "/calender" element={<Calender/>} />
           <Route path= "/students" element={<Students/>} />
+          <Route path= "/instructor" element= {<Instructor/>} />
         </Routes>
       </div>
     </div>
