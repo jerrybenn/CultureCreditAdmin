@@ -4,6 +4,7 @@ import HorizontalNav from '../../components/horizontalNavbar/HorizontalNav';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import TablePagination from '@mui/material/TablePagination';
 import {
   Dialog,
   DialogTitle,
@@ -22,6 +23,8 @@ const Instructor = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({});
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     fetchInstructors();
@@ -104,6 +107,15 @@ const Instructor = () => {
     }
   };
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   const filteredInstructors = data.filter((instructor) =>
     (`${instructor.first_name} ${instructor.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
      instructor.email.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -124,20 +136,40 @@ const Instructor = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredInstructors.map((instructor, index) => (
-              <tr key={index}>
-                <td>{instructor.first_name} {instructor.last_name}</td>
-                <td>{instructor.email}</td>
-                <td>
-                  <MoreHorizIcon
-                    className="moreIcon"
-                    onClick={(e) => handleMenuClick(e, instructor.id)}
+            {filteredInstructors
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((instructor, index) => (
+                <React.Fragment key={index}>
+                  <tr>
+                    <td>{instructor.first_name} {instructor.last_name}</td>
+                    <td>{instructor.email}</td>
+                    <td>
+                      <MoreHorizIcon
+                        className="moreIcon"
+                        onClick={(e) => handleMenuClick(e, instructor.id)}
+                      />
+                    </td>
+                  </tr>
+                </React.Fragment>
+              ))}
+              
+              <tr>
+                <td colSpan="3" style={{ padding: 0 }}>
+                  <TablePagination
+                    component="div"
+                    count={filteredInstructors.length}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    rowsPerPageOptions={[5, 10, 25]}
                   />
                 </td>
               </tr>
-            ))}
           </tbody>
         </table>
+
+       
 
         {/* Context Menu */}
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>

@@ -1,9 +1,15 @@
 import React from 'react'
 import HorizontalNav from '../../components/horizontalNavbar/HorizontalNav.jsx'
+import './Calender.css'
 
 const Calender = () => {
   return (
-    <div><HorizontalNav />Calender</div>
+    <div className="calendarContainer">
+      <HorizontalNav />
+      <div className="mainContent">
+        calender
+      </div>
+    </div>
   )
 }
 

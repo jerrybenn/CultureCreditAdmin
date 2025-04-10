@@ -69,15 +69,19 @@ const [eventToDelete, setEventToDelete] = useState(null);
     loadEvents();
   }, []);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+  const formatDate = (dateString, timeString) => {
+    if (!dateString || !timeString) return "N/A";
+    const combined = new Date(`${dateString}T${timeString}`);
+
+    return combined.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
     });
   };
+  
 
   const handleMenuClick = (event, eventId) => {
     setAnchorEl(event.currentTarget);
@@ -245,7 +249,7 @@ const [eventToDelete, setEventToDelete] = useState(null);
                   <td>{event.title}</td>
                   <td>{event.host}</td>
                   <td>{event.location}</td>
-                  <td>{formatDate(event.date)}</td>
+                  <td>{formatDate(event.date, event.time)}</td>
                   <td>{event.time}</td>
                   <td>{event.credits}</td>
                   <td>{event.num_of_checkins}</td>
@@ -428,45 +432,45 @@ const [eventToDelete, setEventToDelete] = useState(null);
         </Dialog>
 
         <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
-  <DialogTitle>Delete Event</DialogTitle>
-  <DialogContent>
-    <DialogContentText>
-      Are you sure you want to delete the event: 
-      <strong> {eventToDelete?.title}</strong>?
-    </DialogContentText>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setDeleteConfirmOpen(false)} color="secondary">
-      Cancel
-    </Button>
-    <Button 
-      onClick={async () => {
-        try {
-          const res = await fetch(`http://127.0.0.1:3841/events/${eventToDelete.id}`, {
-            method: 'DELETE'
-          });
+          <DialogTitle>Delete Event</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete the event: 
+              <strong> {eventToDelete?.title}</strong>?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteConfirmOpen(false)} color="secondary">
+              Cancel
+            </Button>
+            <Button 
+              onClick={async () => {
+                try {
+                  const res = await fetch(`http://127.0.0.1:3841/events/${eventToDelete.id}`, {
+                    method: 'DELETE'
+                  });
 
-          if (res.ok) {
-            // Remove from state
-            setUpcomingEvents(prev => prev.filter(e => e.id !== eventToDelete.id));
-            setPastEvents(prev => prev.filter(e => e.id !== eventToDelete.id));
-            setDeleteConfirmOpen(false);
-            alert('Event deleted successfully.');
-          } else {
-            alert('Failed to delete event.');
-          }
-        } catch (err) {
-          console.error('Delete error:', err);
-          alert('Error deleting event.');
-        }
-      }}
-      variant="contained"
-      color="error"
-    >
-      Delete
-    </Button>
-  </DialogActions>
-</Dialog>
+                  if (res.ok) {
+                    // Remove from state
+                    setUpcomingEvents(prev => prev.filter(e => e.id !== eventToDelete.id));
+                    setPastEvents(prev => prev.filter(e => e.id !== eventToDelete.id));
+                    setDeleteConfirmOpen(false);
+                    alert('Event deleted successfully.');
+                  } else {
+                    alert('Failed to delete event.');
+                  }
+                } catch (err) {
+                  console.error('Delete error:', err);
+                  alert('Error deleting event.');
+                }
+              }}
+              variant="contained"
+              color="error"
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
 
       </div>
     </div>

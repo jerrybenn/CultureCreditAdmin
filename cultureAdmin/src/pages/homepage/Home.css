@@ -10,18 +10,16 @@
 .smalldashboardInfoCard{
     margin-top: 0px;
     display: flex; 
-    gap: 50px;
+    justify-content: space-between;
     
 }
 
 .cardImage {
-    width: 50px;
-    height: 50px;
+    width: 30px;
+    height: 30px;
     background-color: #06ADE4;
-    padding: 10px;
-    border-radius: 5px;
-    margin-left: 10px;
-    
+    padding: 5px;
+    border-radius: 50%;
     display: flex;  /* Enables Flexbox */
     justify-content: center; /* Centers horizontally */
     align-items: center; /* Centers vertically */
@@ -31,10 +29,10 @@
 
   
 .amount{
-    font-size: 30px;
+    font-size: 35px;
     color: #000000;
     font-weight: bold;
-    padding-bottom: 10px;
+    
     
 }
 
@@ -42,21 +40,30 @@
     font-size: 15px;
     color: #5b5858;
     white-space: nowrap;
+    
 }
 
 
     
 
-.smallCard{
+.smallCard {
     background-color: #ffffff;
     display: flex;
-    width: 600px;
+    flex-direction: column; /* stack vertically */
+    width: 200px; /* or any size you want */
+    padding: 20px;
     border-radius: 10px;
-    align-items: center;
-    padding: 10px;
-    justify-content: space-between;
-
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: fit-content;
+    
 }
+
+.smallCard:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+
 
 .dashboardInformation{
     background-color: #5b678f;
@@ -71,4 +78,31 @@
 .userName{
     padding-left: 20px;
 
+}
+
+.smallCardTop{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cardImageAndCategory{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.bottomCardDescription{
+    font-size: 12px;
+    color: #5b5858;
+    
+}
+
+.changeAmountEvent{
+    font-size: 15px;
+    color: #000000;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
