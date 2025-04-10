@@ -100,10 +100,7 @@ const StudentCard = ({ student }) => {
       </div>
 
       <div className="studentCardFooter">
-        <div className="infoContainer">
-          <div className="infoHeader">ID #</div>
-          <div className="infoNumber">{student.id}</div>
-        </div>
+        
         <div className="infoContainer">
           <div className="infoHeader">Attended</div>
           <div className="infoNumber">{events.length}</div>

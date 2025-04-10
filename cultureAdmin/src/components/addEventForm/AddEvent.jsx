@@ -1,49 +1,122 @@
 import React, { useState } from 'react';
 import './AddEvent.css';
 
-import xMark from '../assets/xmark.svg';
+// Material UI imports
+import Divider from '@mui/material/Divider';
+import MenuItem from '@mui/material/MenuItem';
+import Menu from '@mui/material/Menu';
+import TextField from '@mui/material/TextField';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
+// Material UI icons
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import PersonIcon from '@mui/icons-material/Person';
-import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import Menu from '@mui/material/Menu';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
-import TextField from '@mui/material/TextField';
 
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// Other imports
+import xMark from '../assets/xmark.svg';
 import dayjs from 'dayjs';
 
-const AddEvent = ({ onClose }) => {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [anchorElCredits, setAnchorElCredits] = useState(null);
-  const [anchorElCheckins, setAnchorElCheckins] = useState(null);
-  const [selectedCredits, setSelectedCredits] = useState('');
-  const [selectedCheckins, setSelectedCheckins] = useState('');
-  const [anchorElDate, setAnchorElDate] = useState(null);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [anchorElTime, setAnchorElTime] = useState(null);
-  const [selectedTime, setSelectedTime] = useState('');
-  const [expireDate, setExpireDate] = useState(null);
+const toBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result); // includes "data:image/png;base64,..."
+  reader.onerror = (error) => reject(error);
+});
 
+// Function to resize image
+const resizeImage = (file, maxWidth = 800, maxHeight = 600) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      
+      // Calculate new dimensions while maintaining aspect ratio
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Convert to base64 with reduced quality
+      const resizedImage = canvas.toDataURL('image/jpeg', 0.7);
+      resolve(resizedImage);
+    };
+    
+    img.onerror = (error) => reject(error);
+  });
+};
+
+const AddEvent = ({ onClose }) => {
+  // State for form fields
   const [title, setTitle] = useState('');
   const [host, setHost] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
+  
+  // State for date and time
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
+  const [expireDate, setExpireDate] = useState(null);
+  
+  // State for credits and checkins
+  const [selectedCredits, setSelectedCredits] = useState('');
+  const [selectedCheckins, setSelectedCheckins] = useState('');
+  
+  // State for image upload
+  const [selectedImage, setSelectedImage] = useState(null);
+  
+  // State for menu anchors
+  const [anchorElCredits, setAnchorElCredits] = useState(null);
+  const [anchorElCheckins, setAnchorElCheckins] = useState(null);
+  const [anchorElDate, setAnchorElDate] = useState(null);
+  const [anchorElTime, setAnchorElTime] = useState(null);
 
+  // Event handlers
   const handleCreateEvent = async () => {
     const eventDateTime = new Date(`${selectedDate}T${selectedTime}`);
     const defaultCreditExpiry = new Date(eventDateTime.getTime() + 24 * 60 * 60 * 1000);
     const creditExpiry = expireDate
       ? dayjs(expireDate).format('YYYY-MM-DD HH:mm:ss')
       : defaultCreditExpiry.toISOString().slice(0, 19).replace('T', ' ');
-
+  
     const formattedTime = selectedTime ? `${selectedTime}:00` : '';
-
+  
+    let base64Image = null;
+  
+    if (selectedImage) {
+      try {
+        // Resize the image before converting to base64
+        base64Image = await resizeImage(selectedImage);
+        console.log('Image resized successfully');
+      } catch (error) {
+        console.error('Error processing image:', error);
+        alert('Error processing image. Please try again.');
+        return;
+      }
+    }
+  
     const eventData = {
       title,
       host,
@@ -54,9 +127,13 @@ const AddEvent = ({ onClose }) => {
       num_of_checkIns: selectedCheckins,
       description,
       credit_expiry: creditExpiry,
+      image: base64Image // base64 string here
     };
-
-    console.log('Event Data being sent:', eventData);
+  
+    console.log('Event Data being sent:', {
+      ...eventData,
+      image: base64Image ? 'Base64 image data (truncated for console)' : 'No image'
+    });
 
     try {
       const response = await fetch('http://127.0.0.1:3841/events', {
@@ -64,6 +141,7 @@ const AddEvent = ({ onClose }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventData),
       });
+      
       if (response.ok) {
         alert('Event added successfully!');
         onClose();
@@ -76,6 +154,7 @@ const AddEvent = ({ onClose }) => {
     }
   };
 
+  // Menu handlers
   const handleMenuOpenTime = (event) => {
     setAnchorElTime(event.currentTarget);
   };
@@ -106,13 +185,6 @@ const AddEvent = ({ onClose }) => {
     setAnchorElCheckins(null);
   };
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedImage(file);
-    }
-  };
-
   const handleMenuOpenDate = (event) => {
     setAnchorElDate(event.currentTarget);
   };
@@ -125,18 +197,36 @@ const AddEvent = ({ onClose }) => {
     setSelectedDate(event.target.value);
   };
 
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+    }
+  };
+
   return (
     <div className="eventFormContainer">
       <div className="eventFormContent">
+        {/* Close button */}
         <div className="closeContainer">
           <img src={xMark} alt="Close" onClick={onClose} />
         </div>
+        
+        {/* Event title */}
         <div className="formTitle">
-          <input type="text" placeholder="Give your event a name" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input 
+            type="text" 
+            placeholder="Give your event a name" 
+            value={title} 
+            onChange={(e) => setTitle(e.target.value)} 
+          />
         </div>
+        
         <div className="dividerDiv">
           <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
         </div>
+        
+        {/* Date and time section */}
         <div className="dateTime">
           <div className="dateTimeInputs" onClick={handleMenuOpenDate}>
             <div className="dateTimeImg">
@@ -150,6 +240,7 @@ const AddEvent = ({ onClose }) => {
               <UnfoldMoreIcon sx={{ color: '#c6cdcf' }} />
             </div>
           </div>
+          
           <div className="dateTimeInputs" onClick={handleMenuOpenTime}>
             <div className="dateTimeImg">
               <AccessTimeIcon sx={{ color: '#c6cdcf' }} />
@@ -163,9 +254,12 @@ const AddEvent = ({ onClose }) => {
             </div>
           </div>
         </div>
+        
         <div className="dividerDiv">
           <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
         </div>
+        
+        {/* Date and time menus */}
         <Menu anchorEl={anchorElDate} open={Boolean(anchorElDate)} onClose={handleMenuCloseDate}>
           <MenuItem>
             <TextField
@@ -178,6 +272,7 @@ const AddEvent = ({ onClose }) => {
             />
           </MenuItem>
         </Menu>
+        
         <Menu anchorEl={anchorElTime} open={Boolean(anchorElTime)} onClose={handleMenuCloseTime}>
           <MenuItem>
             <TextField
@@ -190,53 +285,80 @@ const AddEvent = ({ onClose }) => {
             />
           </MenuItem>
         </Menu>
+        
+        {/* Host and credits section */}
         <div className="hostAndImageContainer">
           <div className="seperationContainer">
             <div className="host">Host</div>
             <div className="hostAndImageInputContainer">
               <PersonIcon sx={{ color: '#c6cdcf' }} />
-              <input type="text" placeholder="Host Name" value={host} onChange={(e) => setHost(e.target.value)} />
+              <input 
+                type="text" 
+                placeholder="Host Name" 
+                value={host} 
+                onChange={(e) => setHost(e.target.value)} 
+              />
             </div>
           </div>
+          
           <div className="numericSeperation">
             <div className="host">Credits</div>
             <div className="numericInputContainer" onClick={handleMenuOpenCredits}>
               <input type="text" placeholder="#CC" value={selectedCredits} readOnly />
             </div>
-            <Menu anchorEl={anchorElCredits} open={Boolean(anchorElCredits)} onClose={() => handleMenuCloseCredits(selectedCredits)}>
+            <Menu 
+              anchorEl={anchorElCredits} 
+              open={Boolean(anchorElCredits)} 
+              onClose={() => handleMenuCloseCredits(selectedCredits)}
+            >
               <MenuItem onClick={() => handleMenuCloseCredits('1')}>1 CC</MenuItem>
               <MenuItem onClick={() => handleMenuCloseCredits('2')}>2 CC</MenuItem>
               <MenuItem onClick={() => handleMenuCloseCredits('3')}>3 CC</MenuItem>
             </Menu>
           </div>
         </div>
+        
         <div className="dividerDiv">
           <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
         </div>
+        
+        {/* Location and checkins section */}
         <div className="hostAndImageContainer">
           <div className="seperationContainer">
             <div className="host">Location</div>
             <div className="hostAndImageInputContainer">
               <LocationOnIcon sx={{ color: '#c6cdcf' }} />
-              <input type="text" placeholder="Location Name" value={location} onChange={(e) => setLocation(e.target.value)} />
+              <input 
+                type="text" 
+                placeholder="Location Name" 
+                value={location} 
+                onChange={(e) => setLocation(e.target.value)} 
+              />
             </div>
           </div>
+          
           <div className="numericSeperation">
             <div className="host">Checkins</div>
             <div className="numericInputContainer" onClick={handleMenuOpenCheckins}>
               <input type="text" placeholder="#Checkins" value={selectedCheckins} readOnly />
             </div>
-            <Menu anchorEl={anchorElCheckins} open={Boolean(anchorElCheckins)} onClose={() => handleMenuCloseCheckins(selectedCheckins)}>
+            <Menu 
+              anchorEl={anchorElCheckins} 
+              open={Boolean(anchorElCheckins)} 
+              onClose={() => handleMenuCloseCheckins(selectedCheckins)}
+            >
               <MenuItem onClick={() => handleMenuCloseCheckins('1')}>1 Checkin</MenuItem>
               <MenuItem onClick={() => handleMenuCloseCheckins('2')}>2 Checkins</MenuItem>
               <MenuItem onClick={() => handleMenuCloseCheckins('3')}>3 Checkins</MenuItem>
             </Menu>
           </div>
         </div>
+        
         <div className="dividerDiv">
           <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
         </div>
 
+        {/* Image upload and expiry section */}
         <div className="imageExpire">
           <div className="seperationContainer">
             <div className="host">Upload Image</div>
@@ -245,6 +367,7 @@ const AddEvent = ({ onClose }) => {
               <input type="file" accept="image/*" onChange={handleImageUpload} />
             </div>
           </div>
+          
           <div className="numericSeperation">
             <div className="host">Expire</div>
             <div className="numericInputContainer">
@@ -262,9 +385,7 @@ const AddEvent = ({ onClose }) => {
                           '& fieldset': {
                             border: 'none',
                           },
-                          
                           borderRadius: '8px',
-                         
                           '& .MuiInputAdornment-root': {
                             display: 'none',
                           },
@@ -284,10 +405,19 @@ const AddEvent = ({ onClose }) => {
         <div className="dividerDiv">
           <Divider sx={{ width: '100%', borderBottomWidth: '2px', borderColor: '#B2B4B7FF' }} />
         </div>
+        
+        {/* Description section */}
         <div className="host">Event description</div>
         <div id="hostAndImageInputContainerDescription">
-          <textarea placeholder="Event description" rows="4" value={description} onChange={(e) => setDescription(e.target.value)} />
+          <textarea 
+            placeholder="Event description" 
+            rows="4" 
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)} 
+          />
         </div>
+        
+        {/* Create event button */}
         <div className="createEventButton" onClick={handleCreateEvent}>
           Create Event
         </div>
