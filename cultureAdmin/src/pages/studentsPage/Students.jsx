@@ -35,16 +35,14 @@ const Students = () => {
   return (
     <div className="studentsContainer">
       <HorizontalNav searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-
       <Container sx={{ marginTop: 4 }}>
-      <Grid container spacing={3}>
-  {filteredStudents.map((student, index) => (
-    <Grid item xs={12} sm={6} md={4} key={index}>
-      <StudentCard student={student} />
-    </Grid>
-  ))}
-</Grid>
-
+        <Grid container spacing={3}>
+          {filteredStudents.map((student, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <StudentCard student={student} />
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     </div>
   );
