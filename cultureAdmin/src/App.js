@@ -10,6 +10,7 @@ import Calender from "./pages/calenderPage/Calender";
 import Students from "./pages/studentsPage/Students";
 import Instructor from "./pages/instructorPage/Instructor";
 import AddAdmin from "./pages/addAdminPage/AddAdmin";
+import AdminResetPassword from "./pages/adminResetPasswordPage/AdminResetPassword";
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
 function MainContent() {
   const location = useLocation();
   const showNavbar =
-    location.pathname !== "/" && location.pathname !== "/addAdmin";
+    location.pathname !== "/" && location.pathname !== "/addAdmin" && location.pathname !== "/adminResetPassword";
   return (
     <div className="appContainer">
       {showNavbar && <Navbar />}
@@ -30,7 +31,7 @@ function MainContent() {
         className="mainContent"
         style={{
           marginLeft:
-            location.pathname === "/addAdmin"
+            location.pathname === "/addAdmin" || location.pathname === "/adminResetPassword"
               ? "0px"
               : showNavbar
               ? "220px"
@@ -45,6 +46,7 @@ function MainContent() {
           <Route path="/students" element={<Students />} />
           <Route path="/instructor" element={<Instructor />} />
           <Route path="/addAdmin" element={<AddAdmin />} />
+          <Route path="/adminResetPassword" element={<AdminResetPassword />} />
         </Routes>
       </div>
     </div>

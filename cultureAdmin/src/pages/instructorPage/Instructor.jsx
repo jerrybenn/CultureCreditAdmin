@@ -22,6 +22,7 @@ const Instructor = () => {
   const [selectedInstructorId, setSelectedInstructorId] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -107,6 +108,31 @@ const Instructor = () => {
     }
   };
 
+  const handleEmailOpen = () => {
+    setEmailModalOpen(true);
+    handleMenuClose();
+  };
+
+  const handleEmailSave = async () => {
+    try {
+      const res = await fetch(`http://127.0.0.1:3841/instructors`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm),
+      });
+
+      if (res.ok) {
+        setEmailModalOpen(false);
+        fetchInstructors();
+        alert("Instructor email updated successfully!");
+      } else {
+        alert("Failed to update instructor email.");
+      }
+    } catch (err) {
+      console.error("Error saving instructor email:", err);
+    }
+  };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -175,7 +201,30 @@ const Instructor = () => {
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
           <MenuItem onClick={handleEditOpen}>Edit</MenuItem>
           <MenuItem onClick={handleDeleteOpen}>Delete</MenuItem>
+          <MenuItem onClick={handleEmailOpen}>Email</MenuItem>
         </Menu>
+
+        {/* 📧 Email Modal */}
+        <Dialog open={emailModalOpen} onClose={() => setEmailModalOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle>Update Instructor Email</DialogTitle>
+          <DialogContent>
+            <DialogContentText sx={{ mb: 2 }}>
+              Current email: {selectedInstructor?.email}
+            </DialogContentText>
+            <TextField
+              margin="dense"
+              label="New Email"
+              name="email"
+              fullWidth
+              value={editForm.email || ''}
+              onChange={handleEditChange}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEmailModalOpen(false)} color="secondary">Cancel</Button>
+            <Button variant="contained" onClick={handleEmailSave}>Save</Button>
+          </DialogActions>
+        </Dialog>
 
         {/* ✏️ Edit Instructor Modal */}
         <Dialog open={editModalOpen} onClose={() => setEditModalOpen(false)} fullWidth maxWidth="sm">
