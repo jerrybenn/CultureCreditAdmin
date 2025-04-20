@@ -6,7 +6,7 @@ import './Home.css';
 
 import DashboardEventsTable from '../../components/dashboardEventsTableFolder/DashboardEventsTable.jsx';
 import DashboardGraph from '../../components/dashboardGraphFolder/DashboardGraph.jsx';
-
+import DashboardGraphLine from '../../components/dashboardGraphFolder/DashboardGraphLine.jsx';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import GroupsIcon from '@mui/icons-material/Groups';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
@@ -14,7 +14,7 @@ import EventSeatIcon from '@mui/icons-material/EventSeat';
 import SchoolIcon from '@mui/icons-material/School';
 
 const Home = () => {
-  const studentCount = 0;
+  const [studentCount, setStudentCount] = useState(0);
   const [instructorCount, setInstructorCount] = useState(0);
   const [completedEventsCount, setCompletedEventsCount] = useState(0);
 
@@ -86,6 +86,27 @@ const Home = () => {
       console.log('All events last month:', lastMonthEvents);
     };
 
+    const fetchStudentAttendance = async () => {
+      try {
+        const currentYear = new Date().getFullYear();
+        const startDate = `${currentYear}-01-01`;
+        const endDate = `${currentYear}-12-31`;
+    
+        const res = await fetch(`http://127.0.0.1:3841/student_attendance/${startDate}/${endDate}`);
+        const json = await res.json();
+    
+        if (json["student attendance"] !== undefined) {
+          setStudentCount(json["student attendance"]);
+        } else {
+          console.warn("Student attendance field missing in response", json);
+        }
+      } catch (error) {
+        console.error("Error fetching student attendance:", error);
+      }
+    };
+    
+        
+
     const fetchInstructorCount = async () => {
       try {
         const res = await fetch('http://127.0.0.1:3841/instructors');
@@ -99,6 +120,7 @@ const Home = () => {
 
     loadMonthlyEvents();
     fetchInstructorCount();
+    fetchStudentAttendance();
   }, []);
 
   const navigate = useNavigate();
@@ -186,7 +208,10 @@ const Home = () => {
       </div>
 
       <div className="largedashboardInfoCard">
-        <DashboardGraph />
+       <div className="ContainerGraph">
+          <DashboardGraph />
+          <DashboardGraphLine/>
+          </div>
         <DashboardEventsTable />
       </div>
     </div>

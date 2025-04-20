@@ -9,13 +9,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.graphContainer:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .graphContainer > div {
   width: 100% !important;
 }
 
-/* Make sure the ApexCharts container takes full width */
 .apexcharts-canvas {
   width: 100% !important;
 }

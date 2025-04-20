@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import './HorizontalNav.css';
 import searchIcon from '../assets/search.svg';
@@ -8,8 +8,14 @@ import AddEvent from '../../components/addEventForm/AddEvent.jsx';
 const HorizontalNav = ({ searchQuery, setSearchQuery }) => {
   const [showModal, setShowModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-
   const location = useLocation();
+
+  // Show search by default on students page
+  useEffect(() => {
+    if (location.pathname === "/students") {
+      setShowSearch(true);
+    }
+  }, [location.pathname]);
 
   const getPlaceholder = () => {
     if (location.pathname === "/events") {
