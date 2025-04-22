@@ -27,8 +27,13 @@ const StudentCard = ({ student }) => {
 
   useEffect(() => {
     const fetchAttendedEvents = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("Not authorized. Please log in.");
+
       try {
-        const res = await fetch(`http://127.0.0.1:3841/events/past/${student.id}`);
+        const res = await fetch(`http://127.0.0.1:3841/events/past/${student.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         const data = await res.json();
         if (res.ok && data.events) {
           setEvents(data.events);
@@ -57,10 +62,16 @@ const StudentCard = ({ student }) => {
   const handleEditClose = () => setEditModalOpen(false);
 
   const handleEditSubmit = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return alert("Not authorized. Please log in.");
+
     try {
       const res = await fetch(`http://127.0.0.1:3841/students/${student.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify(formData)
       });
 
@@ -100,7 +111,6 @@ const StudentCard = ({ student }) => {
       </div>
 
       <div className="studentCardFooter">
-        
         <div className="infoContainer">
           <div className="infoHeader">Attended</div>
           <div className="infoNumber">{events.length}</div>

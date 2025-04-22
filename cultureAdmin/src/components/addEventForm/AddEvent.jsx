@@ -136,21 +136,37 @@ const AddEvent = ({ onClose }) => {
     });
 
     try {
+      // Get the JWT token from localStorage
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Not authorized. Please log in.');
+        window.location.href = '/';
+        return;
+      }
+
       const response = await fetch('http://127.0.0.1:3841/events', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(eventData),
       });
       
       if (response.ok) {
         alert('Event added successfully!');
         onClose();
+      } else if (response.status === 401) {
+        alert('Your session has expired. Please log in again.');
+        localStorage.removeItem('token');
+        window.location.href = '/';
       } else {
-        alert('Failed to add event.');
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to add event.');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error adding event.');
+      alert('Error adding event. Please try again.');
     }
   };
 

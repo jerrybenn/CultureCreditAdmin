@@ -22,79 +22,83 @@ const Home = () => {
   const [upcomingEventCount, setUpcomingEventCount] = useState(0); // Upcoming events for current month
   const [percentChangeEvent, setPercentChangeEvent] = useState(0); // Percent change from last month
   const [data, setData] = useState([]);
-
   useEffect(() => {
     const loadMonthlyEvents = async () => {
+      const token = localStorage.getItem("token");
       const now = new Date();
-
+  
       // === CURRENT MONTH ===
       const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const endOfThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
       const startStr = startOfThisMonth.toISOString().split('T')[0];
       const endStr = endOfThisMonth.toISOString().split('T')[0];
-
+  
       // === LAST MONTH ===
       const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
       const lastStartStr = startOfLastMonth.toISOString().split('T')[0];
       const lastEndStr = endOfLastMonth.toISOString().split('T')[0];
-
-      // === Fetch Current Month Events ===
+  
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+  
       const resThisMonth = await fetch(
-        `http://127.0.0.1:3841/events/daterange?start_date=${startStr}&end_date=${endStr}`
+        `http://127.0.0.1:3841/events/daterange?start_date=${startStr}&end_date=${endStr}`,
+        { headers }
       );
       const thisMonthEvents = await resThisMonth.json();
-
-      // === Fetch Last Month Events ===
+  
       const resLastMonth = await fetch(
-        `http://127.0.0.1:3841/events/daterange?start_date=${lastStartStr}&end_date=${lastEndStr}`
+        `http://127.0.0.1:3841/events/daterange?start_date=${lastStartStr}&end_date=${lastEndStr}`,
+        { headers }
       );
       const lastMonthEvents = await resLastMonth.json();
-
-      // === Separate Upcoming from Current Month ===
+  
       const upcoming = thisMonthEvents.filter(
         (event) => new Date(event.date) >= now
       );
-      
-      // === Calculate Completed Events ===
+  
       const completed = thisMonthEvents.filter(
         (event) => new Date(event.date) < now
       );
-
-      // === Calculate % Change ===
+  
       const thisCount = thisMonthEvents.length;
       const lastCount = lastMonthEvents.length;
       let percentChange = 0;
-
+  
       if (lastCount === 0 && thisCount > 0) {
-        percentChange = 100; // full jump
+        percentChange = 100;
       } else if (lastCount === 0 && thisCount === 0) {
         percentChange = 0;
       } else {
         percentChange = ((thisCount - lastCount) / lastCount) * 100;
       }
-
+  
       setEventCount(thisCount);
       setUpcomingEventCount(upcoming.length);
       setCompletedEventsCount(completed.length);
-      setPercentChangeEvent(Math.round(percentChange)); // round it
+      setPercentChangeEvent(Math.round(percentChange));
       setData(thisMonthEvents);
-
-      console.log('All events this month:', thisMonthEvents);
-      console.log('Upcoming events this month:', upcoming);
-      console.log('Completed events this month:', completed);
-      console.log('All events last month:', lastMonthEvents);
     };
-
+  
     const fetchStudentAttendance = async () => {
       try {
+        const token = localStorage.getItem("token");
+        const headers = {
+          Authorization: `Bearer ${token}`
+        };
+  
         const currentYear = new Date().getFullYear();
         const startDate = `${currentYear}-01-01`;
         const endDate = `${currentYear}-12-31`;
-    
-        const res = await fetch(`http://127.0.0.1:3841/student_attendance/${startDate}/${endDate}`);
+  
+        const res = await fetch(
+          `http://127.0.0.1:3841/student_attendance/${startDate}/${endDate}`,
+          { headers }
+        );
         const json = await res.json();
-    
+  
         if (json["student attendance"] !== undefined) {
           setStudentCount(json["student attendance"]);
         } else {
@@ -104,12 +108,15 @@ const Home = () => {
         console.error("Error fetching student attendance:", error);
       }
     };
-    
-        
-
+  
     const fetchInstructorCount = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:3841/instructors');
+        const token = localStorage.getItem("token");
+        const headers = {
+          Authorization: `Bearer ${token}`
+        };
+  
+        const res = await fetch('http://127.0.0.1:3841/instructors', { headers });
         const json = await res.json();
         const instructors = json.instructors || json;
         setInstructorCount(instructors.length);
@@ -117,7 +124,7 @@ const Home = () => {
         console.error('Error fetching instructor count:', error);
       }
     };
-
+  
     loadMonthlyEvents();
     fetchInstructorCount();
     fetchStudentAttendance();

@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
 
-
-
 import mail from '../../components/assets/mail.svg';
 import lock from '../../components/assets/lock.svg';
 
@@ -13,10 +11,8 @@ const Login = () => {
   const navigate = useNavigate();
 
   const webLink = "http://127.0.0.1:3841/login";
-  const localLink = "http://127.0.0.1:3841/web/admin/";
 
-  const handleLogin = async() => {
-
+  const handleLogin = async () => {
     try {
       const response = await fetch(webLink, {
         method: "POST",
@@ -25,11 +21,19 @@ const Login = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         console.log("Login Successful:", data);
+
+        // 🔐 Store the correct token (either `token` or `access_token`)
+        const jwt = data.token || data.access_token;
+        if (!jwt) {
+          throw new Error("No token returned in response");
+        }
+
+        localStorage.setItem('token', jwt);
         navigate("/home");
       } else {
         alert("Invalid credentials, please try again.");
@@ -38,8 +42,7 @@ const Login = () => {
       console.error("Error during login:", error);
       alert("Something went wrong. Please try again later.");
     }
-    
-    
+
     console.log('Email:', email);
     console.log('Password:', password);
   };
@@ -74,7 +77,7 @@ const Login = () => {
         <div className='forgot'>Forgot Password?</div>
 
         <div className='submitContainer'>
-        <div className="submit" onClick={handleLogin}>Login</div>
+          <div className="submit" onClick={handleLogin}>Login</div>
         </div>
       </div>
     </div>

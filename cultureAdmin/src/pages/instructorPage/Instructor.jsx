@@ -33,7 +33,12 @@ const Instructor = () => {
 
   const fetchInstructors = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:3841/instructors');
+      const token = localStorage.getItem("token");
+      const res = await fetch('http://127.0.0.1:3841/instructors', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const json = await res.json();
       const instructors = json.instructors || json;
       console.log("Fetched instructors:", instructors);
@@ -67,9 +72,13 @@ const Instructor = () => {
 
   const handleEditSave = async () => {
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`http://127.0.0.1:3841/instructors`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify(editForm),
       });
 
@@ -92,8 +101,12 @@ const Instructor = () => {
 
   const handleDeleteConfirm = async () => {
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`http://127.0.0.1:3841/instructors/${selectedInstructorId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       if (res.ok) {
@@ -115,9 +128,13 @@ const Instructor = () => {
 
   const handleEmailSave = async () => {
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`http://127.0.0.1:3841/instructors`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify(editForm),
       });
 
@@ -195,16 +212,12 @@ const Instructor = () => {
           </tbody>
         </table>
 
-       
-
-        {/* Context Menu */}
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
           <MenuItem onClick={handleEditOpen}>Edit</MenuItem>
           <MenuItem onClick={handleDeleteOpen}>Delete</MenuItem>
           <MenuItem onClick={handleEmailOpen}>Email</MenuItem>
         </Menu>
 
-        {/* 📧 Email Modal */}
         <Dialog open={emailModalOpen} onClose={() => setEmailModalOpen(false)} fullWidth maxWidth="sm">
           <DialogTitle>Update Instructor Email</DialogTitle>
           <DialogContent>
@@ -226,7 +239,6 @@ const Instructor = () => {
           </DialogActions>
         </Dialog>
 
-        {/* ✏️ Edit Instructor Modal */}
         <Dialog open={editModalOpen} onClose={() => setEditModalOpen(false)} fullWidth maxWidth="sm">
           <DialogTitle>Edit Instructor</DialogTitle>
           <DialogContent>
@@ -261,7 +273,6 @@ const Instructor = () => {
           </DialogActions>
         </Dialog>
 
-        {/* ❌ Delete Confirmation Dialog */}
         <Dialog open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
           <DialogTitle>Confirm Delete</DialogTitle>
           <DialogContent>

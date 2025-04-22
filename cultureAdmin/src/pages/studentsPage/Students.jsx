@@ -8,15 +8,23 @@ const Students = () => {
   const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const token = localStorage.getItem('token');
+  const headers = { Authorization: `Bearer ${token}` };
+
   useEffect(() => {
     const loadData = async () => {
+      if (!token) {
+        alert("Not authorized. Please log in.");
+        return;
+      }
+
       if (!searchQuery.trim()) {
         setStudents([]);
         return;
       }
 
       try {
-        const res = await fetch(`http://127.0.0.1:3841/students/q=${searchQuery}`);
+        const res = await fetch(`http://127.0.0.1:3841/students/q=${searchQuery}`, { headers });
         const json = await res.json();
         setStudents(json);
       } catch (err) {
@@ -25,7 +33,7 @@ const Students = () => {
     };
 
     loadData();
-  }, [searchQuery]);
+  }, [searchQuery, token]);
 
   const filteredStudents = students.filter(student =>
     student.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||

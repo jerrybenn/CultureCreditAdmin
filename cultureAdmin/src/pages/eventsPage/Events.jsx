@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import HorizontalNav from '../../components/horizontalNavbar/HorizontalNav.jsx';
 import './Events.css';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -34,42 +34,116 @@ const Events = () => {
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
   const [attendingStudents, setAttendingStudents] = useState([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-const [eventToDelete, setEventToDelete] = useState(null);
-const [imageFile, setImageFile] = useState(null);
-const [imagePreview, setImagePreview] = useState(null);
+  const [eventToDelete, setEventToDelete] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
+  // Get token from localStorage once
+  const token = localStorage.getItem("token");
+  // Define headers outside of render cycle
+  const headers = useMemo(() => ({
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }), [token]);
 
-  
-
-  const selectedEvent = [...upcomingEvents, ...pastEvents].find((event) => event.id === selectedEventId);
+  const selectedEvent = useMemo(() => 
+    [...upcomingEvents, ...pastEvents].find((event) => event.id === selectedEventId),
+    [upcomingEvents, pastEvents, selectedEventId]
+  );
 
   useEffect(() => {
+    console.log("Current token:", token ? "exists" : "missing");
+    
+    if (!token) {
+      console.log("No token found, redirecting to login");
+      alert("Not authorized. Please log in.");
+      window.location.href = '/';
+      return;
+    }
+  
     const loadEvents = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const today = new Date();
         const thisYearStart = new Date(today.getFullYear(), 0, 1);
-
         const startDateStr = thisYearStart.toISOString().split('T')[0];
         const endDateStr = today.toISOString().split('T')[0];
-
+  
+        console.log("Fetching events with headers:", headers);
+        
         const [upcomingRes, pastRes] = await Promise.all([
-          fetch('http://127.0.0.1:3841/events'),
-          fetch(`http://127.0.0.1:3841/events/daterange?start_date=${startDateStr}&end_date=${endDateStr}`)
+          fetch('http://127.0.0.1:3841/events', { 
+            method: 'GET',
+            headers,
+            mode: 'cors'
+          }),
+          fetch(`http://127.0.0.1:3841/events/daterange?start_date=${startDateStr}&end_date=${endDateStr}`, { 
+            method: 'GET',
+            headers,
+            mode: 'cors'
+          })
         ]);
-
+  
+        console.log("Upcoming response status:", upcomingRes.status);
+        console.log("Past response status:", pastRes.status);
+  
+        if (upcomingRes.status === 401 || pastRes.status === 401) {
+          console.log("Unauthorized response received");
+          setError("Your session has expired. Please log in again.");
+          localStorage.removeItem("token");
+          window.location.href = '/';
+          return;
+        }
+        
+        if (!upcomingRes.ok || !pastRes.ok) {
+          throw new Error(`API error: Upcoming status: ${upcomingRes.status}, Past status: ${pastRes.status}`);
+        }
+  
         const upcomingJson = await upcomingRes.json();
         const pastJson = await pastRes.json();
-
+  
+        console.log("Upcoming events data:", upcomingJson);
+        console.log("Past events data:", pastJson);
+  
+        if (!upcomingJson || !pastJson) {
+          console.error("Invalid response format:", { upcomingJson, pastJson });
+          setError("Invalid response format from server");
+          return;
+        }
+  
         setUpcomingEvents(Array.isArray(upcomingJson.events) ? upcomingJson.events : []);
         setPastEvents(Array.isArray(pastJson) ? pastJson : []);
       } catch (err) {
         console.error("Failed to fetch events:", err);
+        setError(`Failed to fetch events: ${err.message}`);
         setUpcomingEvents([]);
         setPastEvents([]);
+      } finally {
+        setIsLoading(false);
       }
     };
+  
     loadEvents();
-  }, []);
+  }, [token]); // Only depend on token, remove headers dependency
+
+  const eventsToDisplay = useMemo(() => 
+    tabValue === 0 ? upcomingEvents : pastEvents,
+    [tabValue, upcomingEvents, pastEvents]
+  );
+
+  const filteredEvents = useMemo(() => 
+    eventsToDisplay.filter((event) => {
+      const matchesSearch =
+        searchQuery.trim() === "" ||
+        event.title.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    }),
+    [eventsToDisplay, searchQuery]
+  );
 
   const formatDate = (dateString, timeString) => {
     if (!dateString || !timeString) return "N/A";
@@ -130,7 +204,11 @@ const [imagePreview, setImagePreview] = useState(null);
 
   const handleAttendanceClick = async (eventId) => {
     try {
-      const res = await fetch(`http://127.0.0.1:3841/attendance/${eventId}`);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://127.0.0.1:3841/attendance/${eventId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
       if (res.ok) {
         const data = await res.json();
         setAttendingStudents(data);
@@ -157,15 +235,6 @@ const [imagePreview, setImagePreview] = useState(null);
       document.removeEventListener("click", handleOutsideClick);
     };
   }, []);
-
-  const eventsToDisplay = tabValue === 0 ? upcomingEvents : pastEvents;
-
-  const filteredEvents = eventsToDisplay.filter((event) => {
-    const matchesSearch =
-      searchQuery.trim() === "" ||
-      event.title.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
 
   const formatDateOnly = (dateStr) => {
     if (!dateStr) return '';
@@ -204,13 +273,6 @@ const [imagePreview, setImagePreview] = useState(null);
     document.body.removeChild(link);
   };
   
-  const toBase64 = (file) => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result); // includes "data:image/png;base64,..."
-    reader.onerror = (error) => reject(error);
-  });
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -223,106 +285,146 @@ const [imagePreview, setImagePreview] = useState(null);
     }
   };
 
+  const toBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+
   return (
     <div className="eventsPageContainer">
       <HorizontalNav searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-      <div className="tabsContainer">
-        <Tabs value={tabValue} onChange={handleTabChange} aria-label="event tabs">
-          <Tab label="Upcoming Events" />
-          <Tab label="Past Events" />
-        </Tabs>
-      </div>
-
       <div className="mainContent">
-        <table className="eventsTable">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Event Name</th>
-              <th>Host</th>
-              <th>Location</th>
-              <th>Date</th>
-              <th>Time</th>
-              <th>#CC</th>
-              <th>Checkins</th>
-              <th>Expiration</th>
-              <th>More</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredEvents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((event, index) => (
-              <React.Fragment key={index}>
-                <tr className="eventRow">
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleDescription(event.id);
-                    }}
-                    style={{ cursor: "pointer" }}
-                  >
-                    {openEventId === event.id ? (
-                      <KeyboardArrowUpIcon />
-                    ) : (
-                      <KeyboardArrowDownIcon />
-                    )}
-                  </td>
-                  <td>{event.title}</td>
-                  <td>{event.host}</td>
-                  <td>{event.location}</td>
-                  <td>{formatDate(event.date, event.time)}</td>
-                  <td>{event.time}</td>
-                  <td>{event.credits}</td>
-                  <td>{event.num_of_checkins}</td>
-                  <td>{event.credit_expiry}</td>
-                  <td>
-                    <MoreHorizIcon onClick={(e) => handleMenuClick(e, event.id)} />
-                  </td>
-                </tr>
+        {isLoading ? (
+          <div className="loading-container">
+            <p>Loading events...</p>
+          </div>
+        ) : error ? (
+          <div className="error-container">
+            <p className="error-message">{error}</p>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={() => {
+                localStorage.removeItem("token");
+                window.location.href = '/';
+              }}
+            >
+              Go to Login
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div className="tabsContainer">
+              <Tabs value={tabValue} onChange={handleTabChange} aria-label="event tabs">
+                <Tab label="Upcoming Events" />
+                <Tab label="Past Events" />
+              </Tabs>
+            </div>
 
-                <tr>
-                  <td colSpan="10" style={{ padding: 0 }}>
-                    <Collapse in={openEventId === event.id} timeout="auto" unmountOnExit>
-                      <div className="eventDescription">
-                        <div className="descriptionTitle">Event Description:</div>
-                        {event.description} {event.id}
-                      </div>
-                    </Collapse>
-                  </td>
-                </tr>
-              </React.Fragment>
-            ))}
-
-            <tr>
-              <td colSpan="10" style={{ padding: 0 }}>
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={filteredEvents.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  sx={{
-                    padding: '8px px',
-                    '& .MuiTablePagination-toolbar': {
-                      minHeight: '55px',
-                      padding: 0,
-                      marginRight: '20px',
-                    },
-                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                      margin: 0,
-                      marginRight: '30px',
-                    },
-                    '& .MuiInputBase-root': {
-                      marginRight: '30px',
-                    }
-                  }}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            {filteredEvents.length === 0 ? (
+              <div className="no-events-container">
+                <p>No events found.</p>
+              </div>
+            ) : (
+              <table className="eventsTable">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Event Name</th>
+                    <th>Host</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>#CC</th>
+                    <th>Checkins</th>
+                    <th>Expiration</th>
+                    <th>More</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredEvents
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((event, index) => (
+                      <React.Fragment key={event.id || index}>
+                        <tr className="eventRow">
+                          <td
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleDescription(event.id);
+                            }}
+                            style={{ cursor: "pointer" }}
+                          >
+                            {openEventId === event.id ? (
+                              <KeyboardArrowUpIcon />
+                            ) : (
+                              <KeyboardArrowDownIcon />
+                            )}
+                          </td>
+                          <td>{event.title}</td>
+                          <td>{event.host}</td>
+                          <td>{event.location}</td>
+                          <td>{formatDate(event.date, event.time)}</td>
+                          <td>{event.time}</td>
+                          <td>{event.credits}</td>
+                          <td>{event.num_of_checkins}</td>
+                          <td>{event.credit_expiry}</td>
+                          <td>
+                            <MoreHorizIcon 
+                              onClick={(e) => handleMenuClick(e, event.id)}
+                              style={{ cursor: 'pointer' }}
+                            />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colSpan="10" style={{ padding: 0 }}>
+                            <Collapse in={openEventId === event.id} timeout="auto" unmountOnExit>
+                              <div className="eventDescription">
+                                <div className="descriptionTitle">Event Description:</div>
+                                {event.description}
+                              </div>
+                            </Collapse>
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colSpan="10">
+                      <TablePagination
+                        rowsPerPageOptions={[5, 10, 25]}
+                        component="div"
+                        count={filteredEvents.length}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        sx={{
+                          padding: '8px',
+                          '& .MuiTablePagination-toolbar': {
+                            minHeight: '55px',
+                            padding: 0,
+                            marginRight: '20px',
+                          },
+                          '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                            margin: 0,
+                            marginRight: '30px',
+                          },
+                          '& .MuiInputBase-root': {
+                            marginRight: '30px',
+                          }
+                        }}
+                      />
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            )}
+          </>
+        )}
 
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
           <MenuItem onClick={() => {
@@ -414,6 +516,7 @@ const [imagePreview, setImagePreview] = useState(null);
               margin="dense" 
               label="Event Name" 
               fullWidth 
+              required
               value={editedEvent.title || ''} 
               onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })} 
             />
@@ -421,6 +524,7 @@ const [imagePreview, setImagePreview] = useState(null);
               margin="dense" 
               label="Host" 
               fullWidth 
+              required
               value={editedEvent.host || ''} 
               onChange={(e) => setEditedEvent({ ...editedEvent, host: e.target.value })} 
             />
@@ -428,6 +532,7 @@ const [imagePreview, setImagePreview] = useState(null);
               margin="dense" 
               label="Location" 
               fullWidth 
+              required
               value={editedEvent.location || ''} 
               onChange={(e) => setEditedEvent({ ...editedEvent, location: e.target.value })} 
             />
@@ -436,6 +541,7 @@ const [imagePreview, setImagePreview] = useState(null);
               label="Date" 
               type="date" 
               fullWidth 
+              required
               InputLabelProps={{ shrink: true }} 
               value={editedEvent.date || ''} 
               onChange={(e) => setEditedEvent({ ...editedEvent, date: e.target.value })} 
@@ -445,6 +551,7 @@ const [imagePreview, setImagePreview] = useState(null);
               label="Time" 
               type="time" 
               fullWidth 
+              required
               InputLabelProps={{ shrink: true }} 
               value={editedEvent.time || ''} 
               onChange={(e) => setEditedEvent({ ...editedEvent, time: e.target.value })} 
@@ -452,13 +559,16 @@ const [imagePreview, setImagePreview] = useState(null);
             <TextField 
               margin="dense" 
               label="Credits" 
+              type="number"
               fullWidth 
+              required
               value={editedEvent.credits || ''} 
               onChange={(e) => setEditedEvent({ ...editedEvent, credits: e.target.value })} 
             />
             <TextField 
               margin="dense" 
               label="Checkins" 
+              type="number"
               fullWidth 
               value={editedEvent.num_of_checkins || ''} 
               onChange={(e) => setEditedEvent({ ...editedEvent, num_of_checkins: e.target.value })} 
@@ -468,6 +578,7 @@ const [imagePreview, setImagePreview] = useState(null);
               label="Expiration" 
               type="datetime-local" 
               fullWidth 
+              required
               InputLabelProps={{ shrink: true }} 
               value={editedEvent.credit_expiry ? new Date(editedEvent.credit_expiry).toISOString().slice(0, 16) : ''} 
               onChange={(e) => setEditedEvent({ ...editedEvent, credit_expiry: e.target.value })} 
@@ -490,14 +601,9 @@ const [imagePreview, setImagePreview] = useState(null);
                 InputLabelProps={{ shrink: true }}
                 label="Event Image"
                 inputProps={{ accept: 'image/*' }}
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    setEditedEvent({ ...editedEvent, image: file });
-                  }
-                }}
+                onChange={handleImageChange}
               />
-             
+              
               {imagePreview && (
                 <div style={{ marginTop: '16px' }}>
                   <img 
@@ -520,31 +626,45 @@ const [imagePreview, setImagePreview] = useState(null);
             </div>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setEditDialogOpen(false)} color="secondary">Cancel</Button>
+            <Button onClick={() => setEditDialogOpen(false)} color="secondary">
+              Cancel
+            </Button>
             <Button 
               variant="contained" 
               onClick={async () => {
                 try {
-                  const payload = {
-                    ...editedEvent,
-                    date: formatDateOnly(editedEvent.date),
-                    credit_expiry: formatDateTime(editedEvent.credit_expiry),
-                  };
+                  // Validate required fields
+                  if (!editedEvent.title || !editedEvent.host || !editedEvent.location || 
+                      !editedEvent.date || !editedEvent.time || !editedEvent.credits || 
+                      !editedEvent.credit_expiry) {
+                    alert('Please fill in all required fields');
+                    return;
+                  }
 
+                  let base64Image = null;
                   if (imageFile) {
                     try {
-                      const base64Image = await toBase64(imageFile);
-                      payload.image = base64Image;
+                      base64Image = await toBase64(imageFile);
                     } catch (error) {
                       console.error('Error converting image to base64:', error);
-                      alert('Error processing image. Please try again.');
+                      alert('Failed to process image');
                       return;
                     }
                   }
 
+                  const payload = {
+                    ...editedEvent,
+                    date: formatDateOnly(editedEvent.date),
+                    credit_expiry: formatDateTime(editedEvent.credit_expiry),
+                    image: base64Image || editedEvent.image_url
+                  };
+
                   const res = await fetch(`http://127.0.0.1:3841/events/${editedEvent.id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${token}`
+                    },
                     body: JSON.stringify(payload),
                   });
 
@@ -556,11 +676,11 @@ const [imagePreview, setImagePreview] = useState(null);
                     setImagePreview(null);
                     alert('Event updated successfully!');
                   } else {
-                    alert('Failed to update event.');
+                    throw new Error('Failed to update event');
                   }
                 } catch (err) {
                   console.error(err);
-                  alert('Error updating event.');
+                  alert('Error updating event. Please try again.');
                 }
               }}
             >
@@ -584,9 +704,14 @@ const [imagePreview, setImagePreview] = useState(null);
             <Button 
               onClick={async () => {
                 try {
-                  const res = await fetch(`http://127.0.0.1:3841/events/${eventToDelete.id}`, {
-                    method: 'DELETE'
-                  });
+                  const token = localStorage.getItem("token");
+const res = await fetch(`http://127.0.0.1:3841/events/${eventToDelete.id}`, {
+  method: 'DELETE',
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
+
 
                   if (res.ok) {
                     // Remove from state
