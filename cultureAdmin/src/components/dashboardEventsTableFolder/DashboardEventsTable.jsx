@@ -1,5 +1,5 @@
-import { React, useEffect, useState } from 'react'
-import './DashboardEventsTable.css'
+import { React, useEffect, useState } from 'react';
+import './DashboardEventsTable.css';
 
 const DashboardEventsTable = () => {
   const [data, setData] = useState([]);
@@ -7,14 +7,33 @@ const DashboardEventsTable = () => {
   useEffect(() => {
     const loadData = async () => {
       console.log('fetching data');
-      const d = await fetch('http://127.0.0.1:3841/events')
-      const json = await d.json()
-      setData(json.events)
-      console.log(d);
-      console.log(json.events);
-      console.log('done fetching data');
-    }
-    loadData()
+
+      try {
+        const token = localStorage.getItem('token');
+
+        const res = await fetch('http://127.0.0.1:3841/events', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const json = await res.json();
+
+        if (json.events) {
+          setData(json.events);
+        } else {
+          console.warn("Unexpected response:", json);
+        }
+
+        console.log(res);
+        console.log(json.events);
+        console.log('done fetching data');
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    };
+
+    loadData();
   }, []);
 
   return (
@@ -40,7 +59,7 @@ const DashboardEventsTable = () => {
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};
 
 export default DashboardEventsTable;

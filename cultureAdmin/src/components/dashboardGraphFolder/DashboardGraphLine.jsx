@@ -18,7 +18,17 @@ const DashboardGraphLine = () => {
       const endDate = `${currentYear}-12-31`;
 
       try {
-        const res = await fetch(`http://127.0.0.1:3841/events/daterange?start_date=${startDate}&end_date=${endDate}`);
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(
+          `http://127.0.0.1:3841/events/daterange?start_date=${startDate}&end_date=${endDate}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
         const data = await res.json();
 
         if (!Array.isArray(data)) {
@@ -28,18 +38,10 @@ const DashboardGraphLine = () => {
         const monthlyCounts = Array(12).fill(0);
         const monthlyEvents = Array(12).fill().map(() => []);
 
-        console.log("\n=== Date Parsing Debug ===");
         data.forEach(event => {
-          // safer date parsing to avoid timezone issues
           const [year, month, day] = event.date.split('-').map(Number);
-          const eventDate = new Date(year, month - 1, day); // month is 0-indexed
+          const eventDate = new Date(year, month - 1, day);
           const eventMonth = eventDate.getMonth();
-
-          console.log(`Event: ${event.title}`);
-          console.log(`Original string: ${event.date}`);
-          console.log(`Parsed date: ${eventDate}`);
-          console.log(`Month Index: ${eventMonth} (${monthLabels[eventMonth]})`);
-          console.log('---');
 
           if (!isNaN(eventDate.getTime())) {
             monthlyCounts[eventMonth] += 1;
@@ -48,22 +50,6 @@ const DashboardGraphLine = () => {
             console.warn("Skipping invalid date:", event.date);
           }
         });
-
-        console.log("\n=== Monthly Event Details ===");
-        monthlyEvents.forEach((events, monthIndex) => {
-          if (events.length > 0) {
-            console.log(`\n${monthLabels[monthIndex]}:`);
-            console.log(`Total events: ${events.length}`);
-            events.forEach(event => {
-              console.log(`- ${event.title} (${event.date})`);
-            });
-          }
-        });
-
-        console.log("\n=== Summary ===");
-        console.log("Total events this year:", data.length);
-        console.log("April events:", monthlyCounts[3]);
-        console.log("=====================");
 
         setMonthlyData(monthlyCounts);
       } catch (error) {

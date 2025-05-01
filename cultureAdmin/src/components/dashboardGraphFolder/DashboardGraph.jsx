@@ -14,27 +14,27 @@ const DashboardGraph = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get current year's start and end dates
-        const currentYear = new Date().getFullYear();
-        const startDate = `${currentYear}-01-01`;
-        const endDate = `${currentYear}-12-31`;
+        const token = localStorage.getItem("token");
+        const uniqueStudentsPerMonth = new Array(12).fill().map(() => new Set());
 
-        // Fetch all events for the current year (both past and upcoming)
-        const eventsRes = await axios.get(`http://127.0.0.1:3841/events/daterange?start_date=${startDate}&end_date=${endDate}`);
-        const events = eventsRes.data;
+        const eventsRes = await axios.get("http://127.0.0.1:3841/events", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
 
-        // Create an array of Sets to store unique student IDs for each month
-        const uniqueStudentsPerMonth = Array(12).fill().map(() => new Set());
+        const events = eventsRes.data.events;
 
         for (const event of events) {
           const eventMonth = new Date(event.date).getMonth(); // 0-based
-          const attendanceRes = await axios.get(`http://127.0.0.1:3841/attendance/${event.id}`);
-          const attendingStudents = attendanceRes.data;
-          
-          // Add each student's ID to the Set for that month
-          attendingStudents.forEach(student => {
-            uniqueStudentsPerMonth[eventMonth].add(student.id);
+          const attendanceRes = await axios.get(`http://127.0.0.1:3841/attendance/${event.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           });
+
+          const students = attendanceRes.data;
+          students.forEach(student => uniqueStudentsPerMonth[eventMonth].add(student.id));
         }
 
         // Convert Sets to counts

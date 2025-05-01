@@ -14,6 +14,13 @@ const Calender = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          alert("Not authorized. Please log in.");
+          window.location.href = '/';
+          return;
+        }
+
         const currentYear = new Date().getFullYear();
         const startDate = `${currentYear}-01-01`;
         const endDate = `${currentYear}-12-31`;
@@ -22,6 +29,9 @@ const Calender = () => {
           params: {
             start_date: startDate,
             end_date: endDate
+          },
+          headers: {
+            Authorization: `Bearer ${token}`
           }
         });
 
@@ -33,6 +43,11 @@ const Calender = () => {
         setEvents(formattedEvents);
       } catch (error) {
         console.error('Error fetching events:', error);
+        if (error.response?.status === 401) {
+          alert("Your session has expired. Please log in again.");
+          localStorage.removeItem("token");
+          window.location.href = '/';
+        }
       }
     };
 
