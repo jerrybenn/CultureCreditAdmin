@@ -14,19 +14,31 @@ const DashboardGraph = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const eventsRes = await axios.get("http://127.0.0.1:3841/events"); // or events/past/<device>
-        const events = eventsRes.data.events;
+        // Get current year's start and end dates
+        const currentYear = new Date().getFullYear();
+        const startDate = `${currentYear}-01-01`;
+        const endDate = `${currentYear}-12-31`;
 
-        const monthCounts = new Array(12).fill(0);
+        // Fetch all events for the current year (both past and upcoming)
+        const eventsRes = await axios.get(`http://127.0.0.1:3841/events/daterange?start_date=${startDate}&end_date=${endDate}`);
+        const events = eventsRes.data;
+
+        // Create an array of Sets to store unique student IDs for each month
+        const uniqueStudentsPerMonth = Array(12).fill().map(() => new Set());
 
         for (const event of events) {
           const eventMonth = new Date(event.date).getMonth(); // 0-based
           const attendanceRes = await axios.get(`http://127.0.0.1:3841/attendance/${event.id}`);
-          const numStudents = attendanceRes.data.length;
-
-          monthCounts[eventMonth] += numStudents;
+          const attendingStudents = attendanceRes.data;
+          
+          // Add each student's ID to the Set for that month
+          attendingStudents.forEach(student => {
+            uniqueStudentsPerMonth[eventMonth].add(student.id);
+          });
         }
 
+        // Convert Sets to counts
+        const monthCounts = uniqueStudentsPerMonth.map(students => students.size);
         setMonthlyData(monthCounts);
       } catch (err) {
         console.error("Error loading graph data", err);
@@ -67,7 +79,7 @@ const DashboardGraph = () => {
 
   const series = [
     {
-      name: "Students Attended",
+      name: "Unique Students",
       data: monthlyData,
     },
   ];

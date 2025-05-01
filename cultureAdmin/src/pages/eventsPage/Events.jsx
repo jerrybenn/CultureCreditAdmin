@@ -35,6 +35,8 @@ const Events = () => {
   const [attendingStudents, setAttendingStudents] = useState([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 const [eventToDelete, setEventToDelete] = useState(null);
+const [imageFile, setImageFile] = useState(null);
+const [imagePreview, setImagePreview] = useState(null);
 
 
   
@@ -202,6 +204,25 @@ const [eventToDelete, setEventToDelete] = useState(null);
     document.body.removeChild(link);
   };
   
+  const toBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result); // includes "data:image/png;base64,..."
+    reader.onerror = (error) => reject(error);
+  });
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="eventsPageContainer">
       <HorizontalNav searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
@@ -389,45 +410,162 @@ const [eventToDelete, setEventToDelete] = useState(null);
         <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
           <DialogTitle>Edit Event</DialogTitle>
           <DialogContent>
-            <TextField margin="dense" label="Event Name" fullWidth value={editedEvent.title || ''} onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })} />
-            <TextField margin="dense" label="Host" fullWidth value={editedEvent.host || ''} onChange={(e) => setEditedEvent({ ...editedEvent, host: e.target.value })} />
-            <TextField margin="dense" label="Location" fullWidth value={editedEvent.location || ''} onChange={(e) => setEditedEvent({ ...editedEvent, location: e.target.value })} />
-            <TextField margin="dense" label="Date" type="date" fullWidth InputLabelProps={{ shrink: true }} value={editedEvent.date || ''} onChange={(e) => setEditedEvent({ ...editedEvent, date: e.target.value })} />
-            <TextField margin="dense" label="Time" type="time" fullWidth InputLabelProps={{ shrink: true }} value={editedEvent.time || ''} onChange={(e) => setEditedEvent({ ...editedEvent, time: e.target.value })} />
-            <TextField margin="dense" label="Credits" fullWidth value={editedEvent.credits || ''} onChange={(e) => setEditedEvent({ ...editedEvent, credits: e.target.value })} />
-            <TextField margin="dense" label="Checkins" fullWidth value={editedEvent.num_of_checkins || ''} onChange={(e) => setEditedEvent({ ...editedEvent, num_of_checkins: e.target.value })} />
-            <TextField margin="dense" label="Expiration" type="datetime-local" fullWidth InputLabelProps={{ shrink: true }} value={editedEvent.credit_expiry ? new Date(editedEvent.credit_expiry).toISOString().slice(0, 16) : ''} onChange={(e) => setEditedEvent({ ...editedEvent, credit_expiry: e.target.value })} />
-            <TextField margin="dense" label="Description" fullWidth multiline rows={4} value={editedEvent.description || ''} onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })} />
+            <TextField 
+              margin="dense" 
+              label="Event Name" 
+              fullWidth 
+              value={editedEvent.title || ''} 
+              onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })} 
+            />
+            <TextField 
+              margin="dense" 
+              label="Host" 
+              fullWidth 
+              value={editedEvent.host || ''} 
+              onChange={(e) => setEditedEvent({ ...editedEvent, host: e.target.value })} 
+            />
+            <TextField 
+              margin="dense" 
+              label="Location" 
+              fullWidth 
+              value={editedEvent.location || ''} 
+              onChange={(e) => setEditedEvent({ ...editedEvent, location: e.target.value })} 
+            />
+            <TextField 
+              margin="dense" 
+              label="Date" 
+              type="date" 
+              fullWidth 
+              InputLabelProps={{ shrink: true }} 
+              value={editedEvent.date || ''} 
+              onChange={(e) => setEditedEvent({ ...editedEvent, date: e.target.value })} 
+            />
+            <TextField 
+              margin="dense" 
+              label="Time" 
+              type="time" 
+              fullWidth 
+              InputLabelProps={{ shrink: true }} 
+              value={editedEvent.time || ''} 
+              onChange={(e) => setEditedEvent({ ...editedEvent, time: e.target.value })} 
+            />
+            <TextField 
+              margin="dense" 
+              label="Credits" 
+              fullWidth 
+              value={editedEvent.credits || ''} 
+              onChange={(e) => setEditedEvent({ ...editedEvent, credits: e.target.value })} 
+            />
+            <TextField 
+              margin="dense" 
+              label="Checkins" 
+              fullWidth 
+              value={editedEvent.num_of_checkins || ''} 
+              onChange={(e) => setEditedEvent({ ...editedEvent, num_of_checkins: e.target.value })} 
+            />
+            <TextField 
+              margin="dense" 
+              label="Expiration" 
+              type="datetime-local" 
+              fullWidth 
+              InputLabelProps={{ shrink: true }} 
+              value={editedEvent.credit_expiry ? new Date(editedEvent.credit_expiry).toISOString().slice(0, 16) : ''} 
+              onChange={(e) => setEditedEvent({ ...editedEvent, credit_expiry: e.target.value })} 
+            />
+            <TextField 
+              margin="dense" 
+              label="Description" 
+              fullWidth 
+              multiline 
+              rows={4} 
+              value={editedEvent.description || ''} 
+              onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })} 
+            />
+            
+            <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+              <TextField
+                margin="dense"
+                type="file"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                label="Event Image"
+                inputProps={{ accept: 'image/*' }}
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setEditedEvent({ ...editedEvent, image: file });
+                  }
+                }}
+              />
+             
+              {imagePreview && (
+                <div style={{ marginTop: '16px' }}>
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain' }} 
+                  />
+                </div>
+              )}
+              {editedEvent.image_url && !imagePreview && (
+                <div style={{ marginTop: '16px' }}>
+                  <p>Current image:</p>
+                  <img 
+                    src={editedEvent.image_url} 
+                    alt="Current" 
+                    style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain' }} 
+                  />
+                </div>
+              )}
+            </div>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setEditDialogOpen(false)} color="secondary">Cancel</Button>
-            <Button variant="contained" onClick={async () => {
-              try {
-                const payload = {
-                  ...editedEvent,
-                  date: formatDateOnly(editedEvent.date),
-                  credit_expiry: formatDateTime(editedEvent.credit_expiry),
-                };
+            <Button 
+              variant="contained" 
+              onClick={async () => {
+                try {
+                  const payload = {
+                    ...editedEvent,
+                    date: formatDateOnly(editedEvent.date),
+                    credit_expiry: formatDateTime(editedEvent.credit_expiry),
+                  };
 
-                const res = await fetch(`http://127.0.0.1:3841/events/${editedEvent.id}`, {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(payload),
-                });
+                  if (imageFile) {
+                    try {
+                      const base64Image = await toBase64(imageFile);
+                      payload.image = base64Image;
+                    } catch (error) {
+                      console.error('Error converting image to base64:', error);
+                      alert('Error processing image. Please try again.');
+                      return;
+                    }
+                  }
 
-                if (res.ok) {
-                  const updatedUpcoming = upcomingEvents.map(ev => ev.id === editedEvent.id ? payload : ev);
-                  setUpcomingEvents(updatedUpcoming);
-                  setEditDialogOpen(false);
-                  alert('Event updated successfully!');
-                } else {
-                  alert('Failed to update event.');
+                  const res = await fetch(`http://127.0.0.1:3841/events/${editedEvent.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                  });
+
+                  if (res.ok) {
+                    const updatedUpcoming = upcomingEvents.map(ev => ev.id === editedEvent.id ? payload : ev);
+                    setUpcomingEvents(updatedUpcoming);
+                    setEditDialogOpen(false);
+                    setImageFile(null);
+                    setImagePreview(null);
+                    alert('Event updated successfully!');
+                  } else {
+                    alert('Failed to update event.');
+                  }
+                } catch (err) {
+                  console.error(err);
+                  alert('Error updating event.');
                 }
-              } catch (err) {
-                console.error(err);
-                alert('Error updating event.');
-              }
-            }}>Save Changes</Button>
+              }}
+            >
+              Save Changes
+            </Button>
           </DialogActions>
         </Dialog>
 
