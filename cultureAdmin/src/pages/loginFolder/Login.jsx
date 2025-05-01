@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './Login.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 import mail from '../../components/assets/mail.svg';
 import lock from '../../components/assets/lock.svg';
@@ -74,7 +74,7 @@ const Login = () => {
           />
         </div>
 
-        <div className='forgot'>Forgot Password?</div>
+        <Link to="/forgotpassword" className='forgot'>Forgot Password?</Link>
 
         <div className='submitContainer'>
           <div className="submit" onClick={handleLogin}>Login</div>
