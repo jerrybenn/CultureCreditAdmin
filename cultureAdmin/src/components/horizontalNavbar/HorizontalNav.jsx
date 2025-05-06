@@ -5,6 +5,7 @@ import searchIcon from '../assets/search.svg';
 import bellIcon from '../assets/bell.svg';
 import AddEvent from '../../components/addEventForm/AddEvent.jsx';
 import { Menu, MenuItem, Tabs, Tab, List, ListItem, ListItemText } from '@mui/material';
+import Grow from '@mui/material/Grow';
 
 const HorizontalNav = ({ searchQuery, setSearchQuery }) => {
   const [showModal, setShowModal] = useState(false);

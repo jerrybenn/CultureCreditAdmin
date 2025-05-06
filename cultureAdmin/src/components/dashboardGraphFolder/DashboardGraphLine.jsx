@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./DashboardGraphLine.css";
 import Chart from "react-apexcharts";
+import { motion } from "framer-motion";
 
 const DashboardGraphLine = () => {
   const [monthlyData, setMonthlyData] = useState([]);
@@ -66,7 +67,20 @@ const DashboardGraphLine = () => {
     chart: {
       type: "area",
       height: 350,
-      toolbar: { show: false }
+      toolbar: { show: false },
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350
+        }
+      }
     },
     dataLabels: {
       enabled: false,
@@ -107,7 +121,12 @@ const DashboardGraphLine = () => {
   ];
 
   return (
-    <div className="graphContainer">
+    <motion.div 
+      className="graphContainer"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.5 }}
+    >
       {loading ? <p>Loading chart...</p> : (
         <Chart
           options={options}
@@ -117,7 +136,7 @@ const DashboardGraphLine = () => {
           width="100%"
         />
       )}
-    </div>
+    </motion.div>
   );
 };
 
