@@ -2,14 +2,13 @@ import React, { useEffect, useState } from 'react';
 import HorizontalNav from '../../components/horizontalNavbar/HorizontalNav.jsx';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-
-
-
+import { motion } from 'framer-motion';
 import './Calender.css';
 import axios from 'axios';
 
 const Calender = () => {
   const [events, setEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -37,7 +36,11 @@ const Calender = () => {
 
         const formattedEvents = res.data.map(event => ({
           title: event.title,
-          date: event.date
+          date: event.date,
+          backgroundColor: '#06ADE4',
+          borderColor: '#06ADE4',
+          textColor: '#ffffff',
+          classNames: ['event-animation']
         }));
 
         setEvents(formattedEvents);
@@ -48,6 +51,8 @@ const Calender = () => {
           localStorage.removeItem("token");
           window.location.href = '/';
         }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -55,17 +60,48 @@ const Calender = () => {
   }, []);
 
   return (
-    <div className="calendarContainer">
+    <motion.div 
+      className="calendarContainer"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <HorizontalNav />
-      <div className="mainContent">
-        <FullCalendar
-          plugins={[dayGridPlugin]}
-          initialView="dayGridMonth"
-          events={events}
-          height="auto"
-        />
-      </div>
-    </div>
+      <motion.div 
+        className="mainContent"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        {isLoading ? (
+          <motion.div
+            className="loading-container"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            Loading calendar...
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <FullCalendar
+              plugins={[dayGridPlugin]}
+              initialView="dayGridMonth"
+              events={events}
+              height="auto"
+              eventDidMount={(info) => {
+                // Add animation to each event when it mounts
+                info.el.style.animation = 'eventPopIn 0.3s ease-out forwards';
+              }}
+            />
+          </motion.div>
+        )}
+      </motion.div>
+    </motion.div>
   );
 };
 

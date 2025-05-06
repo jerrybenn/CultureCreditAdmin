@@ -1,6 +1,9 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+
+
 import HorizontalNav from '../../components/horizontalNavbar/HorizontalNav.jsx';
 import './Home.css';
 
@@ -139,7 +142,13 @@ const Home = () => {
 
       <div className="smalldashboardInfoCard">
         {/* Total Events Card */}
-        <div className="smallCard" onClick={() => navigate('/events')}>
+        <motion.div
+          className="smallCard"
+          onClick={() => navigate('/events')}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}>
+
           <div className="smallCardTop">
             <div className="cardImageAndCategory">
           
@@ -157,10 +166,15 @@ const Home = () => {
               {percentChangeEvent}% from last month
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Upcoming Events Card */}
-        <div className="smallCard" onClick={() => navigate('/events')}>
+        <motion.div 
+          className="smallCard" 
+          onClick={() => navigate('/events')}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}>
           <div className="smallCardTop">
             <div className="cardImageAndCategory">
               <div className="category">Upcoming Events</div>
@@ -175,10 +189,15 @@ const Home = () => {
               {completedEventsCount} events completed
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Instructors Card */}
-        <div className="smallCard" onClick={() => navigate('/instructor')}>
+        <motion.div 
+          className="smallCard" 
+          onClick={() => navigate('/instructor')}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}>
           <div className="smallCardTop">
             <div className="cardImageAndCategory">
               <div className="category">Instructors</div>
@@ -193,10 +212,15 @@ const Home = () => {
               total instructors
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Students Card */}
-        <div className="smallCard" onClick={() => navigate('/students')}>
+        <motion.div 
+          className="smallCard" 
+          onClick={() => navigate('/students')}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}>
           <div className="smallCardTop">
             <div className="cardImageAndCategory">
               <div className="category">Students</div>
@@ -211,7 +235,7 @@ const Home = () => {
               total students
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <div className="largedashboardInfoCard">

@@ -5,6 +5,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import TablePagination from '@mui/material/TablePagination';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dialog,
   DialogTitle,
@@ -167,7 +168,12 @@ const Instructor = () => {
   const selectedInstructor = data.find(i => i.id === selectedInstructorId);
 
   return (
-    <div className="instructorContainer">
+    <motion.div 
+      className="instructorContainer"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <HorizontalNav searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="mainContent">
         <table className="instructorTable">
@@ -179,117 +185,185 @@ const Instructor = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredInstructors
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((instructor, index) => (
-                <React.Fragment key={index}>
-                  <tr>
+            <AnimatePresence>
+              {filteredInstructors
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((instructor, index) => (
+                  <motion.tr
+                    key={instructor.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
                     <td>{instructor.first_name} {instructor.last_name}</td>
                     <td>{instructor.email}</td>
                     <td>
-                      <MoreHorizIcon
-                        className="moreIcon"
-                        onClick={(e) => handleMenuClick(e, instructor.id)}
-                      />
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <MoreHorizIcon
+                          className="moreIcon"
+                          onClick={(e) => handleMenuClick(e, instructor.id)}
+                        />
+                      </motion.div>
                     </td>
-                  </tr>
-                </React.Fragment>
-              ))}
+                  </motion.tr>
+                ))}
+            </AnimatePresence>
               
-              <tr>
-                <td colSpan="3" style={{ padding: 0 }}>
-                  <TablePagination
-                    component="div"
-                    count={filteredInstructors.length}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    rowsPerPage={rowsPerPage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    rowsPerPageOptions={[5, 10, 25]}
-                  />
-                </td>
-              </tr>
+            <tr>
+              <td colSpan="3" style={{ padding: 0 }}>
+                <TablePagination
+                  component="div"
+                  count={filteredInstructors.length}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={[5, 10, 25]}
+                />
+              </td>
+            </tr>
           </tbody>
         </table>
 
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+        <Menu 
+          anchorEl={anchorEl} 
+          open={Boolean(anchorEl)} 
+          onClose={handleMenuClose}
+          TransitionComponent={motion.div}
+          TransitionProps={{
+            initial: { opacity: 0, y: -10 },
+            animate: { opacity: 1, y: 0 },
+            exit: { opacity: 0, y: -10 },
+            transition: { duration: 0.2 }
+          }}
+        >
           <MenuItem onClick={handleEditOpen}>Edit</MenuItem>
           <MenuItem onClick={handleDeleteOpen}>Delete</MenuItem>
           <MenuItem onClick={handleEmailOpen}>Email</MenuItem>
         </Menu>
 
-        <Dialog open={emailModalOpen} onClose={() => setEmailModalOpen(false)} fullWidth maxWidth="sm">
-          <DialogTitle>Update Instructor Email</DialogTitle>
-          <DialogContent>
-            <DialogContentText sx={{ mb: 2 }}>
-              Current email: {selectedInstructor?.email}
-            </DialogContentText>
-            <TextField
-              margin="dense"
-              label="New Email"
-              name="email"
-              fullWidth
-              value={editForm.email || ''}
-              onChange={handleEditChange}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setEmailModalOpen(false)} color="secondary">Cancel</Button>
-            <Button variant="contained" onClick={handleEmailSave}>Save</Button>
-          </DialogActions>
-        </Dialog>
+        <AnimatePresence>
+          {emailModalOpen && (
+            <Dialog 
+              open={emailModalOpen} 
+              onClose={() => setEmailModalOpen(false)} 
+              fullWidth 
+              maxWidth="sm"
+              TransitionComponent={motion.div}
+              TransitionProps={{
+                initial: { opacity: 0, y: -20 },
+                animate: { opacity: 1, y: 0 },
+                exit: { opacity: 0, y: -20 },
+                transition: { duration: 0.3 }
+              }}
+            >
+              <DialogTitle>Update Instructor Email</DialogTitle>
+              <DialogContent>
+                <DialogContentText sx={{ mb: 2 }}>
+                  Current email: {selectedInstructor?.email}
+                </DialogContentText>
+                <TextField
+                  margin="dense"
+                  label="New Email"
+                  name="email"
+                  fullWidth
+                  value={editForm.email || ''}
+                  onChange={handleEditChange}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setEmailModalOpen(false)} color="secondary">Cancel</Button>
+                <Button variant="contained" onClick={handleEmailSave}>Save</Button>
+              </DialogActions>
+            </Dialog>
+          )}
+        </AnimatePresence>
 
-        <Dialog open={editModalOpen} onClose={() => setEditModalOpen(false)} fullWidth maxWidth="sm">
-          <DialogTitle>Edit Instructor</DialogTitle>
-          <DialogContent>
-            <TextField
-              margin="dense"
-              label="First Name"
-              name="first_name"
-              fullWidth
-              value={editForm.first_name || ''}
-              onChange={handleEditChange}
-            />
-            <TextField
-              margin="dense"
-              label="Last Name"
-              name="last_name"
-              fullWidth
-              value={editForm.last_name || ''}
-              onChange={handleEditChange}
-            />
-            <TextField
-              margin="dense"
-              label="Email"
-              name="email"
-              fullWidth
-              value={editForm.email || ''}
-              onChange={handleEditChange}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setEditModalOpen(false)} color="secondary">Cancel</Button>
-            <Button variant="contained" onClick={handleEditSave}>Save</Button>
-          </DialogActions>
-        </Dialog>
+        <AnimatePresence>
+          {editModalOpen && (
+            <Dialog 
+              open={editModalOpen} 
+              onClose={() => setEditModalOpen(false)} 
+              fullWidth 
+              maxWidth="sm"
+              TransitionComponent={motion.div}
+              TransitionProps={{
+                initial: { opacity: 0, y: -20 },
+                animate: { opacity: 1, y: 0 },
+                exit: { opacity: 0, y: -20 },
+                transition: { duration: 0.3 }
+              }}
+            >
+              <DialogTitle>Edit Instructor</DialogTitle>
+              <DialogContent>
+                <TextField
+                  margin="dense"
+                  label="First Name"
+                  name="first_name"
+                  fullWidth
+                  value={editForm.first_name || ''}
+                  onChange={handleEditChange}
+                />
+                <TextField
+                  margin="dense"
+                  label="Last Name"
+                  name="last_name"
+                  fullWidth
+                  value={editForm.last_name || ''}
+                  onChange={handleEditChange}
+                />
+                <TextField
+                  margin="dense"
+                  label="Email"
+                  name="email"
+                  fullWidth
+                  value={editForm.email || ''}
+                  onChange={handleEditChange}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setEditModalOpen(false)} color="secondary">Cancel</Button>
+                <Button variant="contained" onClick={handleEditSave}>Save</Button>
+              </DialogActions>
+            </Dialog>
+          )}
+        </AnimatePresence>
 
-        <Dialog open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to delete{' '}
-              <strong>{selectedInstructor?.first_name} {selectedInstructor?.last_name}</strong>?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteModalOpen(false)} color="secondary">Cancel</Button>
-            <Button onClick={handleDeleteConfirm} variant="contained" color="error">
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <AnimatePresence>
+          {deleteModalOpen && (
+            <Dialog 
+              open={deleteModalOpen} 
+              onClose={() => setDeleteModalOpen(false)}
+              TransitionComponent={motion.div}
+              TransitionProps={{
+                initial: { opacity: 0, y: -20 },
+                animate: { opacity: 1, y: 0 },
+                exit: { opacity: 0, y: -20 },
+                transition: { duration: 0.3 }
+              }}
+            >
+              <DialogTitle>Confirm Delete</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Are you sure you want to delete{' '}
+                  <strong>{selectedInstructor?.first_name} {selectedInstructor?.last_name}</strong>?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setDeleteModalOpen(false)} color="secondary">Cancel</Button>
+                <Button onClick={handleDeleteConfirm} variant="contained" color="error">
+                  Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

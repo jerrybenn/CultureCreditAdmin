@@ -16,6 +16,7 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { Tabs, Tab } from '@mui/material';
 import TablePagination from '@mui/material/TablePagination';
+import { motion, AnimatePresence } from 'framer-motion';
 
 
 const Events = () => {
@@ -293,16 +294,31 @@ const Events = () => {
   });
 
   return (
-    <div className="eventsPageContainer">
+    <motion.div 
+      className="eventsPageContainer"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <HorizontalNav searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
       <div className="mainContent">
         {isLoading ? (
-          <div className="loading-container">
+          <motion.div 
+            className="loading-container"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
             <p>Loading events...</p>
-          </div>
+          </motion.div>
         ) : error ? (
-          <div className="error-container">
+          <motion.div 
+            className="error-container"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <p className="error-message">{error}</p>
             <Button 
               variant="contained" 
@@ -314,22 +330,37 @@ const Events = () => {
             >
               Go to Login
             </Button>
-          </div>
+          </motion.div>
         ) : (
           <>
-            <div className="tabsContainer">
+            <motion.div 
+              className="tabsContainer"
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
               <Tabs value={tabValue} onChange={handleTabChange} aria-label="event tabs">
                 <Tab label="Upcoming Events" />
                 <Tab label="Past Events" />
               </Tabs>
-            </div>
+            </motion.div>
 
             {filteredEvents.length === 0 ? (
-              <div className="no-events-container">
+              <motion.div 
+                className="no-events-container"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
                 <p>No events found.</p>
-              </div>
+              </motion.div>
             ) : (
-              <table className="eventsTable">
+              <motion.table 
+                className="eventsTable"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
                 <thead>
                   <tr>
                     <th></th>
@@ -345,11 +376,19 @@ const Events = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredEvents
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((event, index) => (
-                      <React.Fragment key={event.id || index}>
-                        <tr className="eventRow">
+                  <AnimatePresence>
+                    {filteredEvents
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((event, index) => (
+                        <motion.tr
+                          key={event.id || index}
+                          className="eventRow"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                          whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+                        >
                           <td
                             onClick={(e) => {
                               e.stopPropagation();
@@ -377,19 +416,9 @@ const Events = () => {
                               style={{ cursor: 'pointer' }}
                             />
                           </td>
-                        </tr>
-                        <tr>
-                          <td colSpan="10" style={{ padding: 0 }}>
-                            <Collapse in={openEventId === event.id} timeout="auto" unmountOnExit>
-                              <div className="eventDescription">
-                                <div className="descriptionTitle">Event Description:</div>
-                                {event.description}
-                              </div>
-                            </Collapse>
-                          </td>
-                        </tr>
-                      </React.Fragment>
-                    ))}
+                        </motion.tr>
+                      ))}
+                  </AnimatePresence>
                 </tbody>
                 <tfoot>
                   <tr>
@@ -421,7 +450,7 @@ const Events = () => {
                     </td>
                   </tr>
                 </tfoot>
-              </table>
+              </motion.table>
             )}
           </>
         )}
@@ -438,25 +467,34 @@ const Events = () => {
           </MenuItem>
 
           <MenuItem onClick={() => {
-  const allEvents = [...upcomingEvents, ...pastEvents];
-  const toDelete = allEvents.find((e) => e.id === selectedEventId);
-  setEventToDelete(toDelete);
-  setDeleteConfirmOpen(true);
-  handleMenuClose();
-}}>
-  Delete
-</MenuItem>
+            const allEvents = [...upcomingEvents, ...pastEvents];
+            const toDelete = allEvents.find((e) => e.id === selectedEventId);
+            setEventToDelete(toDelete);
+            setDeleteConfirmOpen(true);
+            handleMenuClose();
+          }}>
+            Delete
+          </MenuItem>
 
           <MenuItem onClick={() => handleOpenDialog(selectedEventId)}>
             Send URL
           </MenuItem>
           <MenuItem onClick={() => handleAttendanceClick(selectedEventId)}>
-          Attendance
+            Attendance
           </MenuItem>
-
         </Menu>
 
-        <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+        <Dialog 
+          open={dialogOpen} 
+          onClose={handleCloseDialog}
+          PaperComponent={motion.div}
+          PaperProps={{
+            initial: { scale: 0.9, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 0.9, opacity: 0 },
+            transition: { duration: 0.2 }
+          }}
+        >
           <DialogTitle>Send Event URL</DialogTitle>
           <DialogContent>
             <DialogContentText>
@@ -482,148 +520,153 @@ const Events = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog open={attendanceDialogOpen} onClose={() => setAttendanceDialogOpen(false)} fullWidth maxWidth="sm">
-  <DialogTitle>Attending Students</DialogTitle>
-  <DialogContent>
-    {attendingStudents.length > 0 ? (
-      <ul>
-        {attendingStudents.map((student, index) => (
-          <li key={index}>
-            {student.first_name} {student.last_name} - {student.email}
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <DialogContentText>No students attended this event yet.</DialogContentText>
-    )}
-  </DialogContent>
-  <DialogActions>
-  <Button onClick={downloadCSV} variant="outlined" color="secondary">
-    Export CSV
-  </Button>
-  <Button onClick={() => setAttendanceDialogOpen(false)} color="primary">
-    Close
-  </Button>
-</DialogActions>
+        <Dialog 
+          open={attendanceDialogOpen} 
+          onClose={() => setAttendanceDialogOpen(false)} 
+          fullWidth 
+          maxWidth="sm"
+          PaperComponent={motion.div}
+          PaperProps={{
+            initial: { scale: 0.9, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 0.9, opacity: 0 },
+            transition: { duration: 0.2 }
+          }}
+        >
+          <DialogTitle>Attending Students</DialogTitle>
+          <DialogContent>
+            {attendingStudents.length > 0 ? (
+              <motion.ul
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                {attendingStudents.map((student, index) => (
+                  <motion.li
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    {student.first_name} {student.last_name} - {student.email}
+                  </motion.li>
+                ))}
+              </motion.ul>
+            ) : (
+              <DialogContentText>No students attended this event yet.</DialogContentText>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={downloadCSV} variant="outlined" color="secondary">
+              Export CSV
+            </Button>
+            <Button onClick={() => setAttendanceDialogOpen(false)} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-</Dialog>
-
-
-        <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
+        <Dialog 
+          open={editDialogOpen} 
+          onClose={() => setEditDialogOpen(false)} 
+          fullWidth 
+          maxWidth="sm"
+          PaperComponent={motion.div}
+          PaperProps={{
+            initial: { scale: 0.9, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 0.9, opacity: 0 },
+            transition: { duration: 0.2 }
+          }}
+        >
           <DialogTitle>Edit Event</DialogTitle>
           <DialogContent>
-            <TextField 
-              margin="dense" 
-              label="Event Name" 
-              fullWidth 
-              required
-              value={editedEvent.title || ''} 
-              onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })} 
-            />
-            <TextField 
-              margin="dense" 
-              label="Host" 
-              fullWidth 
-              required
-              value={editedEvent.host || ''} 
-              onChange={(e) => setEditedEvent({ ...editedEvent, host: e.target.value })} 
-            />
-            <TextField 
-              margin="dense" 
-              label="Location" 
-              fullWidth 
-              required
-              value={editedEvent.location || ''} 
-              onChange={(e) => setEditedEvent({ ...editedEvent, location: e.target.value })} 
-            />
-            <TextField 
-              margin="dense" 
-              label="Date" 
-              type="date" 
-              fullWidth 
-              required
-              InputLabelProps={{ shrink: true }} 
-              value={editedEvent.date || ''} 
-              onChange={(e) => setEditedEvent({ ...editedEvent, date: e.target.value })} 
-            />
-            <TextField 
-              margin="dense" 
-              label="Time" 
-              type="time" 
-              fullWidth 
-              required
-              InputLabelProps={{ shrink: true }} 
-              value={editedEvent.time || ''} 
-              onChange={(e) => setEditedEvent({ ...editedEvent, time: e.target.value })} 
-            />
-            <TextField 
-              margin="dense" 
-              label="Credits" 
-              type="number"
-              fullWidth 
-              required
-              value={editedEvent.credits || ''} 
-              onChange={(e) => setEditedEvent({ ...editedEvent, credits: e.target.value })} 
-            />
-            <TextField 
-              margin="dense" 
-              label="Checkins" 
-              type="number"
-              fullWidth 
-              value={editedEvent.num_of_checkins || ''} 
-              onChange={(e) => setEditedEvent({ ...editedEvent, num_of_checkins: e.target.value })} 
-            />
-            <TextField 
-              margin="dense" 
-              label="Expiration" 
-              type="datetime-local" 
-              fullWidth 
-              required
-              InputLabelProps={{ shrink: true }} 
-              value={editedEvent.credit_expiry ? new Date(editedEvent.credit_expiry).toISOString().slice(0, 16) : ''} 
-              onChange={(e) => setEditedEvent({ ...editedEvent, credit_expiry: e.target.value })} 
-            />
-            <TextField 
-              margin="dense" 
-              label="Description" 
-              fullWidth 
-              multiline 
-              rows={4} 
-              value={editedEvent.description || ''} 
-              onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })} 
-            />
-            
-            <div style={{ marginTop: '16px', marginBottom: '16px' }}>
-              <TextField
-                margin="dense"
-                type="file"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                label="Event Image"
-                inputProps={{ accept: 'image/*' }}
-                onChange={handleImageChange}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <TextField 
+                margin="dense" 
+                label="Event Name" 
+                fullWidth 
+                required
+                value={editedEvent.title || ''} 
+                onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })} 
               />
-              
-              {imagePreview && (
-                <div style={{ marginTop: '16px' }}>
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain' }} 
-                  />
-                </div>
-              )}
-              {editedEvent.image_url && !imagePreview && (
-                <div style={{ marginTop: '16px' }}>
-                  <p>Current image:</p>
-                  <img 
-                    src={editedEvent.image_url} 
-                    alt="Current" 
-                    style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain' }} 
-                  />
-                </div>
-              )}
-            </div>
+              <TextField 
+                margin="dense" 
+                label="Host" 
+                fullWidth 
+                required
+                value={editedEvent.host || ''} 
+                onChange={(e) => setEditedEvent({ ...editedEvent, host: e.target.value })} 
+              />
+              <TextField 
+                margin="dense" 
+                label="Location" 
+                fullWidth 
+                required
+                value={editedEvent.location || ''} 
+                onChange={(e) => setEditedEvent({ ...editedEvent, location: e.target.value })} 
+              />
+              <TextField 
+                margin="dense" 
+                label="Date" 
+                type="date" 
+                fullWidth 
+                required
+                InputLabelProps={{ shrink: true }} 
+                value={editedEvent.date || ''} 
+                onChange={(e) => setEditedEvent({ ...editedEvent, date: e.target.value })} 
+              />
+              <TextField 
+                margin="dense" 
+                label="Time" 
+                type="time" 
+                fullWidth 
+                required
+                InputLabelProps={{ shrink: true }} 
+                value={editedEvent.time || ''} 
+                onChange={(e) => setEditedEvent({ ...editedEvent, time: e.target.value })} 
+              />
+              <TextField 
+                margin="dense" 
+                label="Credits" 
+                type="number"
+                fullWidth 
+                required
+                value={editedEvent.credits || ''} 
+                onChange={(e) => setEditedEvent({ ...editedEvent, credits: e.target.value })} 
+              />
+              <TextField 
+                margin="dense" 
+                label="Checkins" 
+                type="number"
+                fullWidth 
+                value={editedEvent.num_of_checkins || ''} 
+                onChange={(e) => setEditedEvent({ ...editedEvent, num_of_checkins: e.target.value })} 
+              />
+              <TextField 
+                margin="dense" 
+                label="Expiration" 
+                type="datetime-local" 
+                fullWidth 
+                required
+                InputLabelProps={{ shrink: true }} 
+                value={editedEvent.credit_expiry ? new Date(editedEvent.credit_expiry).toISOString().slice(0, 16) : ''} 
+                onChange={(e) => setEditedEvent({ ...editedEvent, credit_expiry: e.target.value })} 
+              />
+              <TextField 
+                margin="dense" 
+                label="Description" 
+                fullWidth 
+                multiline 
+                rows={4} 
+                value={editedEvent.description || ''} 
+                onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })} 
+              />
+            </motion.div>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setEditDialogOpen(false)} color="secondary">
@@ -689,7 +732,17 @@ const Events = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+        <Dialog 
+          open={deleteConfirmOpen} 
+          onClose={() => setDeleteConfirmOpen(false)}
+          PaperComponent={motion.div}
+          PaperProps={{
+            initial: { scale: 0.9, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 0.9, opacity: 0 },
+            transition: { duration: 0.2 }
+          }}
+        >
           <DialogTitle>Delete Event</DialogTitle>
           <DialogContent>
             <DialogContentText>
@@ -705,13 +758,12 @@ const Events = () => {
               onClick={async () => {
                 try {
                   const token = localStorage.getItem("token");
-const res = await fetch(`http://127.0.0.1:3841/events/${eventToDelete.id}`, {
-  method: 'DELETE',
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
-
+                  const res = await fetch(`http://127.0.0.1:3841/events/${eventToDelete.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                      Authorization: `Bearer ${token}`
+                    }
+                  });
 
                   if (res.ok) {
                     // Remove from state
@@ -734,9 +786,8 @@ const res = await fetch(`http://127.0.0.1:3841/events/${eventToDelete.id}`, {
             </Button>
           </DialogActions>
         </Dialog>
-
       </div>
-    </div>
+    </motion.div>
   );
 };
 
